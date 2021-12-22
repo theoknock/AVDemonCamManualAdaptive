@@ -30,29 +30,55 @@ static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
 // To-Do: Write a new touch event handler for aligning buttons to thumb range/swipe
 
 static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
+    CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
     return ^ (UITouch * _Nullable touch) {
         static UITouch * touch_glb;
+        static CGPoint tp;
         (touch_glb.phase == UITouchPhaseBegan || touch != nil)
         ? ^{
             touch_glb = touch;
-            NSLog(@"touch.phase == UITouchPhaseBegan");
-            // show buttons
+            tp = [touch_glb locationInView:touch_glb.view];
+            // set highlighted property to FALSE for all buttons
+            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
+                CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
+                [button setHighlighted:FALSE];
+                [button setSelected:FALSE];
+                double angle = 180.0 + (90.0 * ((property) / 4.0));
+                angle = degreesToRadians(angle);
+                UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                                  radius:radius
+                                                                              startAngle:angle endAngle:angle clockwise:FALSE];
+                [button setCenter:[bezier_quad_curve currentPoint]];
+            }];
         }()
         : (touch_glb.phase == UITouchPhaseMoved) ? ^{
-            NSLog(@"touch.phase == UITouchPhaseMoved");
-            CGPoint tp = [touch_glb locationInView:touch_glb.view];
-            CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
+            tp = [touch_glb locationInView:touch_glb.view];
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
                 CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
                 [button setSelected:(CGRectContainsPoint(button.frame, tp)) ? TRUE : FALSE];
                 double angle = 180.0 + (90.0 * ((property) / 4.0));
+                angle = degreesToRadians(angle);
                 UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
                                                                                   radius:radius
-                                                                              startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
+                                                                              startAngle:angle endAngle:angle clockwise:FALSE];
                 [button setCenter:[bezier_quad_curve currentPoint]];
             }];
         }()
-        : ^{}();
+        : ^{
+            // send touch event to selected button
+            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
+                (button.isSelected)
+                ? ^{
+                    // This should be the "event handler" for the button to avoid lag
+//                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
+                    [button setHighlighted:TRUE];
+                    *stop = TRUE;
+                }()
+                : ^{
+                    //
+                }();
+            }];
+        }();
     };
     
 };
@@ -212,7 +238,7 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
         
         [capturePreview = (AVCaptureVideoPreviewLayer *)[(CameraView *)self.view layer] setSessionWithNoConnection:captureSession];
         [capturePreview setSessionWithNoConnection:captureSession];
-
+        
         [captureConnection   = [[AVCaptureConnection alloc] initWithInputPort:captureInput.ports.firstObject videoPreviewLayer:capturePreview] setVideoOrientation:AVCaptureVideoOrientationPortrait];
         [captureSession addConnection:([captureSession canAddConnection:captureConnection]) ? captureConnection : nil];
     }
