@@ -39,15 +39,16 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             touch_glb = touch;
             tp = [touch_glb locationInView:touch_glb.view];
             CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
-            // set highlighted property to FALSE for all buttons
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-               [button setHighlighted:FALSE];
-                double angle = 180.0 + (90.0 * ((property) / 4.0));
-                angle = degreesToRadians(angle);
-                UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                                                  radius:radius
-                                                                              startAngle:angle endAngle:angle clockwise:FALSE];
-                [button setCenter:[bezier_quad_curve currentPoint]];
+                [UIView animateWithDuration:0.125 animations:^{
+                    [button setHighlighted:FALSE];
+                    double angle = 180.0 + (90.0 * ((property) / 4.0));
+                    angle = degreesToRadians(angle);
+                    UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                                      radius:radius
+                                                                                  startAngle:angle endAngle:angle clockwise:FALSE];
+                    [button setCenter:[bezier_quad_curve currentPoint]];
+                }];
             }];
         }()
         : (touch_glb.phase == UITouchPhaseMoved) ? ^{
@@ -64,18 +65,29 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             }];
         }()
         : ^{
-            // send touch event to selected button
+            tp = [touch_glb locationInView:touch_glb.view];
+            CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-                (button.isSelected)
-                ? ^{
-                    // This should be the "event handler" for the button to avoid lag
-//                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
-                    *stop = TRUE;
-                }()
-                : ^{
-                    //
-                }();
+                [button setHighlighted:(CGRectContainsPoint(button.frame, tp) && button.isHighlighted == FALSE) ? TRUE : FALSE];
+                double angle = 180.0 + (90.0 * ((property) / 4.0));
+                angle = degreesToRadians(angle);
+                UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                                  radius:radius
+                                                                              startAngle:angle endAngle:angle clockwise:FALSE];
+                [button setCenter:[bezier_quad_curve currentPoint]];
             }];
+            // send touch event to selected button
+//            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
+//                (button.isSelected)
+//                ? ^{
+//                    // This should be the "event handler" for the button to avoid lag
+////                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
+//                    *stop = TRUE;
+//                }()
+//                : ^{
+//                    //
+//                }();
+//            }];
         }();
     };
     
