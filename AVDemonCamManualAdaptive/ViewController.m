@@ -38,11 +38,10 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         ? ^{
             touch_glb = touch;
             tp = [touch_glb locationInView:touch_glb.view];
+            CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
             // set highlighted property to FALSE for all buttons
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-                CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
-                [button setHighlighted:FALSE];
-                [button setSelected:FALSE];
+               [button setHighlighted:FALSE];
                 double angle = 180.0 + (90.0 * ((property) / 4.0));
                 angle = degreesToRadians(angle);
                 UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
@@ -53,9 +52,9 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         }()
         : (touch_glb.phase == UITouchPhaseMoved) ? ^{
             tp = [touch_glb locationInView:touch_glb.view];
+            CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-                CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
-                [button setSelected:(CGRectContainsPoint(button.frame, tp)) ? TRUE : FALSE];
+                [button setHighlighted:(CGRectContainsPoint(button.frame, tp) && button.isHighlighted == FALSE) ? TRUE : FALSE];
                 double angle = 180.0 + (90.0 * ((property) / 4.0));
                 angle = degreesToRadians(angle);
                 UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
@@ -71,7 +70,6 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
                 ? ^{
                     // This should be the "event handler" for the button to avoid lag
 //                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
-                    [button setHighlighted:TRUE];
                     *stop = TRUE;
                 }()
                 : ^{
