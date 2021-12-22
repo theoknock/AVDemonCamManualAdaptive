@@ -27,20 +27,20 @@ static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
     return x;
 };
 
-// To-Do: Extend range of button rect for touch poiht
-//        Consolidate button-array enumeration code to a single block (that takes and executes a block that sets selected/highlighted properties, depending on the touch phase)
-//        Rewrite the displayButtons block to
 static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
     CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, view);
     for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
         [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
-//    __block CGPoint touch_point;
+    
     CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
     void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
         CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
-            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(CaptureDeviceConfigurationPropertyButton(property).frame, touch_point) && !CaptureDeviceConfigurationPropertyButton(property).isSelected)];
+            // TO-DO: Create a new button "frame" that encompasses the space between buttons so that...
+            // ...there is always a button selected while the thumb is down by...
+            // ...extending the height in both vertical directions by half the distance between the center points of the buttons on above or below the current button)
+            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(CaptureDeviceConfigurationPropertyButton(property).frame, CGPointMake(CaptureDeviceConfigurationPropertyButton(property).center.x, touch_point.y)) && !CaptureDeviceConfigurationPropertyButton(property).isSelected)];
             double angle = 180.0 + (90.0 * ((property) / 4.0));
             angle = degreesToRadians(angle);
             UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
@@ -54,26 +54,29 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         (touch != nil)
         ? ^{
             touch_glb = touch;
-            displayButtons([touch_glb locationInView:touch_glb.view]);
-        }()
-        : (touch_glb.phase == UITouchPhaseMoved) ? ^{
-            displayButtons([touch_glb locationInView:touch_glb.view]);
+            displayButtons([touch locationInView:touch.view]);
         }()
         : ^{
             displayButtons([touch_glb locationInView:touch_glb.view]);
-            // send touch event to selected button
-//            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-//                (button.isSelected)
-//                ? ^{
-//                    // This should be the "event handler" for the button to avoid lag
-////                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
-//                    *stop = TRUE;
-//                }()
-//                : ^{
-//                    //
-//                }();
-//            }];
         }();
+//        : (touch_glb.phase == UITouchPhaseMoved) ? ^{
+//            displayButtons([touch_glb locationInView:touch_glb.view]);
+//        }()
+//        : ^{
+//            displayButtons([touch_glb locationInView:touch_glb.view]);
+//            // send touch event to selected button
+////            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
+////                (button.isSelected)
+////                ? ^{
+////                    // This should be the "event handler" for the button to avoid lag
+//////                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
+////                    *stop = TRUE;
+////                }()
+////                : ^{
+////                    //
+////                }();
+////            }];
+//        }();
     };
     
 };
