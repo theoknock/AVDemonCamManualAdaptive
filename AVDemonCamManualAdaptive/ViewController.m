@@ -37,16 +37,18 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
     void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
         CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
-            // TO-DO: Create a new button "frame" that encompasses the space between buttons so that...
-            // ...there is always a button selected while the thumb is down by...
-            // ...extending the height in both vertical directions by half the distance between the center points of the buttons on above or below the current button)
-            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(CaptureDeviceConfigurationPropertyButton(property).frame, CGPointMake(CaptureDeviceConfigurationPropertyButton(property).center.x, touch_point.y)) && !CaptureDeviceConfigurationPropertyButton(property).isSelected)];
             double angle = 180.0 + (90.0 * ((property) / 4.0));
             angle = degreesToRadians(angle);
             UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
                                                                               radius:radius
                                                                           startAngle:angle endAngle:angle clockwise:FALSE];
             [CaptureDeviceConfigurationPropertyButton(property) setCenter:[bezier_quad_curve currentPoint]];
+            
+            CGRect button_region = CGRectMake(CaptureDeviceConfigurationPropertyButton(property).frame.origin.x,
+                                              CaptureDeviceConfigurationPropertyButton(property).center.y + ((property >= CaptureDeviceConfigurationControlPropertyZoomFactor) ? ((CaptureDeviceConfigurationPropertyButton(property).center.y + CaptureDeviceConfigurationPropertyButton(property - 1).center.y) / 2.0) : ([CaptureDeviceConfigurationPropertyButton(property) intrinsicContentSize].height / 2.0)),
+                                              CaptureDeviceConfigurationPropertyButton(property).frame.size.width,
+                                              CaptureDeviceConfigurationPropertyButton(property).center.y - ((property <= CaptureDeviceConfigurationControlPropertyTorchLevel) ? ((CaptureDeviceConfigurationPropertyButton(property).center.y + CaptureDeviceConfigurationPropertyButton(property + 1).center.y) / 2.0) : ([CaptureDeviceConfigurationPropertyButton(property) intrinsicContentSize].height / 2.0)));
+            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(button_region, CGPointMake(CaptureDeviceConfigurationPropertyButton(property).center.x, touch_point.y)))];
         };
     };
     return ^ (UITouch * _Nullable touch) {
