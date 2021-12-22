@@ -104,7 +104,7 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             [button = [UIButton new] setTag:property];
             
             [button setBackgroundColor:[UIColor clearColor]];
-            [button setShowsTouchWhenHighlighted:TRUE];
+//            [button setShowsTouchWhenHighlighted:TRUE];
             
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][idx] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
@@ -161,5 +161,7 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
         return [buttons objectAtIndex:property];
     };
 };
+
+static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 
 #endif /* ControlConfiguration_h */

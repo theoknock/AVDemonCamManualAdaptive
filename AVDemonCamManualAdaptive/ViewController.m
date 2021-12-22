@@ -29,48 +29,38 @@ static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
 
 // To-Do: Extend range of button rect for touch poiht
 //        Consolidate button-array enumeration code to a single block (that takes and executes a block that sets selected/highlighted properties, depending on the touch phase)
-
+//        Rewrite the displayButtons block to
 static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
+    CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, view);
+    for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
+        [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
+    }
+//    __block CGPoint touch_point;
     CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
-    void (^displayButtons)(CGPoint, void(^)(UIButton *, CGPoint)) = ^ void (CGPoint touch_point, void(^handleButtonState)(UIButton *, CGPoint)) {
+    void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
         CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
-        [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-            handleButtonState(button, touch_point);
+        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
+            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(CaptureDeviceConfigurationPropertyButton(property).frame, touch_point) && !CaptureDeviceConfigurationPropertyButton(property).isSelected)];
             double angle = 180.0 + (90.0 * ((property) / 4.0));
             angle = degreesToRadians(angle);
             UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
                                                                               radius:radius
                                                                           startAngle:angle endAngle:angle clockwise:FALSE];
-            [button setCenter:[bezier_quad_curve currentPoint]];
-        }];
+            [CaptureDeviceConfigurationPropertyButton(property) setCenter:[bezier_quad_curve currentPoint]];
+        };
     };
     return ^ (UITouch * _Nullable touch) {
         static UITouch * touch_glb;
         (touch != nil)
         ? ^{
             touch_glb = touch;
-            displayButtons([touch_glb locationInView:touch_glb.view], ^ (UIButton * button, CGPoint touch_point) {
-                (button.isHighlighted) ?: ^{
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [button setHighlighted:FALSE];
-                    });
-                }();
-            });
+            displayButtons([touch_glb locationInView:touch_glb.view]);
         }()
         : (touch_glb.phase == UITouchPhaseMoved) ? ^{
-            displayButtons([touch_glb locationInView:touch_glb.view], ^ (UIButton * button, CGPoint touch_point) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [button setSelected:(CGRectContainsPoint(button.frame, touch_point) && button.isSelected == FALSE) ? TRUE : FALSE];
-                });
-            });
+            displayButtons([touch_glb locationInView:touch_glb.view]);
         }()
         : ^{
-            displayButtons([touch_glb locationInView:touch_glb.view], ^ (UIButton * button, CGPoint touch_point) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [button setHighlighted:(CGRectContainsPoint(button.frame, touch_point) && button.isHighlighted == FALSE) ? TRUE : FALSE];
-                    [button setSelected:FALSE];
-                });
-            });
+            displayButtons([touch_glb locationInView:touch_glb.view]);
             // send touch event to selected button
 //            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
 //                (button.isSelected)
@@ -181,11 +171,6 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
         [(CAShapeLayer *)self.layer setStrokeColor:[UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0].CGColor];
         [(CAShapeLayer *)self.layer setFillColor:[UIColor clearColor].CGColor];
         [(CAShapeLayer *)self.layer setBackgroundColor:[UIColor clearColor].CGColor];
-        
-        UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty) = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, self);
-        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
-            [self addSubview:CaptureDeviceConfigurationPropertyButton(property)];
-        }
         
         handle_touch_event = handle_touch_event_init(self);
         [self.layer setNeedsDisplay];
