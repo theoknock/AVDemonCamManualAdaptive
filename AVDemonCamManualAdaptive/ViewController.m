@@ -41,26 +41,20 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         : (touch_glb.phase == UITouchPhaseMoved) ? ^{
             NSLog(@"touch.phase == UITouchPhaseMoved");
             CGPoint tp = [touch_glb locationInView:touch_glb.view];
-            NSRange tp_range = NSMakeRange(tp.y, 0);
+            CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
             [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-                ((NSIntersectionRange(tp_range, (NSRange)NSMakeRange(button.center.y - (button.intrinsicContentSize.height / 2.0), button.intrinsicContentSize.height))).location != 0)
-                ?: ^ { *stop = TRUE;
-                    CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].height);
-                    CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
-                    [view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-                        double angle = 180.0 + (90.0 * ((property) / 4.0));
-                        UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                                                          radius:radius
-                                                                                      startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
-                        [button setCenter:[bezier_quad_curve currentPoint]];
-                    }];
-                }();
+                CGFloat radius = sqrt(pow(tp.x - center.x, 2.0) + pow(tp.y - center.y, 2.0));
+                [button setSelected:(CGRectContainsPoint(button.frame, tp)) ? TRUE : FALSE];
+                double angle = 180.0 + (90.0 * ((property) / 4.0));
+                UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                                  radius:radius
+                                                                              startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
+                [button setCenter:[bezier_quad_curve currentPoint]];
             }];
         }()
-        : ^{
-            // hide buttons (or send touch event)?
-        }();
+        : ^{}();
     };
+    
 };
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
