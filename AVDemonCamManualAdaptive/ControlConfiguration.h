@@ -121,6 +121,13 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
                                                                           startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
             [button setCenter:[bezier_quad_curve currentPoint]];
             
+            double below_angle = (property > CaptureDeviceConfigurationControlPropertyTorchLevel) ? 180.0 + (90.0 * ((property - 1) / 4.0)) : angle;
+            bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                              radius:(CGRectGetMaxX(UIScreen.mainScreen.bounds) * 0.75)
+                                                                          startAngle:degreesToRadians(below_angle) endAngle:degreesToRadians(below_angle) clockwise:FALSE];
+            [button setFrame:CGRectMake([bezier_quad_curve currentPoint].x, CGRectGetMinY(button.frame), fabs(button.center.x - [bezier_quad_curve currentPoint].x), CGRectGetHeight(button.frame))];
+            [button.layer setBorderColor:[UIColor redColor].CGColor];
+            [button.layer setBorderWidth:1.0];
             void (^eventHandlerBlock)(void) = ^{
 //                [button setHighlighted:TRUE];
 //                [UIView animateWithDuration:0.3 animations:^ {
