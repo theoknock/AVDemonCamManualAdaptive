@@ -10,21 +10,20 @@
 		B9709CA2276DC3EB003FDA20 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B9709CA1276DC3EB003FDA20 /* AppDelegate.m */; };
 		B9709CA5276DC3EB003FDA20 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B9709CA4276DC3EB003FDA20 /* SceneDelegate.m */; };
 		B9709CA8276DC3EB003FDA20 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B9709CA7276DC3EB003FDA20 /* ViewController.m */; };
-		B9709CAB276DC3EB003FDA20 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9709CA9276DC3EB003FDA20 /* Main.storyboard */; };
 		B9709CAD276DC3EE003FDA20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9709CAC276DC3EE003FDA20 /* Assets.xcassets */; };
 		B9709CB0276DC3EE003FDA20 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B9709CAE276DC3EE003FDA20 /* LaunchScreen.storyboard */; };
 		B9709CB3276DC3EE003FDA20 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B9709CB2276DC3EE003FDA20 /* main.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B911A6552772A3D2000844DF /* ControlConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ControlConfiguration.h; sourceTree = "<group>"; };
 		B9709C9D276DC3EB003FDA20 /* AVDemonCamManualAdaptive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVDemonCamManualAdaptive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9709CA0276DC3EB003FDA20 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		B9709CA1276DC3EB003FDA20 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		B9709CA3276DC3EB003FDA20 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		B9709CA4276DC3EB003FDA20 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		B9709CA6276DC3EB003FDA20 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		B9709CA7276DC3EB003FDA20 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		B9709CAA276DC3EB003FDA20 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B9709CA7276DC3EB003FDA20 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; wrapsLines = 0; };
 		B9709CAC276DC3EE003FDA20 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B9709CAF276DC3EE003FDA20 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B9709CB1276DC3EE003FDA20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -64,10 +63,10 @@
 				B9709CA0276DC3EB003FDA20 /* AppDelegate.h */,
 				B9709CA1276DC3EB003FDA20 /* AppDelegate.m */,
 				B9709CA3276DC3EB003FDA20 /* SceneDelegate.h */,
-				B9709CA4276DC3EB003FDA20 /* SceneDelegate.m */,
+				B911A6552772A3D2000844DF /* ControlConfiguration.h */,
 				B9709CA6276DC3EB003FDA20 /* ViewController.h */,
 				B9709CA7276DC3EB003FDA20 /* ViewController.m */,
-				B9709CA9276DC3EB003FDA20 /* Main.storyboard */,
+				B9709CA4276DC3EB003FDA20 /* SceneDelegate.m */,
 				B9709CAC276DC3EE003FDA20 /* Assets.xcassets */,
 				B9709CAE276DC3EE003FDA20 /* LaunchScreen.storyboard */,
 				B9709CB1276DC3EE003FDA20 /* Info.plist */,
@@ -135,7 +134,6 @@
 			files = (
 				B9709CB0276DC3EE003FDA20 /* LaunchScreen.storyboard in Resources */,
 				B9709CAD276DC3EE003FDA20 /* Assets.xcassets in Resources */,
-				B9709CAB276DC3EB003FDA20 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,14 +154,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		B9709CA9276DC3EB003FDA20 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				B9709CAA276DC3EB003FDA20 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		B9709CAE276DC3EE003FDA20 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -299,7 +289,9 @@
 				INFOPLIST_FILE = AVDemonCamManualAdaptive/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -310,7 +302,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.blogspot.demonicactivity.bush.alan.james.AVDemonCamManualAdaptive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -326,7 +318,9 @@
 				INFOPLIST_FILE = AVDemonCamManualAdaptive/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -337,7 +331,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.blogspot.demonicactivity.bush.alan.james.AVDemonCamManualAdaptive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
