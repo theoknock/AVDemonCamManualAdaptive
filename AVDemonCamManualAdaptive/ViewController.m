@@ -33,22 +33,43 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
     
-    CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [(UIButton *)view.subviews.firstObject intrinsicContentSize].height);
+    CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel) intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor) intrinsicContentSize].height);
+    
     void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
         CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
-            angle = degreesToRadians(angle);
-            UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                                              radius:radius
-                                                                          startAngle:angle endAngle:angle clockwise:FALSE];
-            [CaptureDeviceConfigurationPropertyButton(property) setCenter:[bezier_quad_curve currentPoint]];
+            __block UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                                                      radius:radius
+                                                                                  startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
+            CGPoint current_center_point = CGPointMake(((fabs([bezier_quad_curve currentPoint].x - CaptureDeviceConfigurationPropertyButton(property).center.x) > CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width)  ? [bezier_quad_curve currentPoint].x - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width  / 2.0) : [bezier_quad_curve currentPoint].x ),
+                                                       ((fabs([bezier_quad_curve currentPoint].y - CaptureDeviceConfigurationPropertyButton(property).center.y) < CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height) ? [bezier_quad_curve currentPoint].y - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height / 2.0) : [bezier_quad_curve currentPoint].y ));
+            [CaptureDeviceConfigurationPropertyButton(property) setCenter:current_center_point];
             
-            CGRect button_region = CGRectMake(CaptureDeviceConfigurationPropertyButton(property).frame.origin.x,
-                                              CaptureDeviceConfigurationPropertyButton(property).center.y + ((property >= CaptureDeviceConfigurationControlPropertyZoomFactor) ? ((CaptureDeviceConfigurationPropertyButton(property).center.y + CaptureDeviceConfigurationPropertyButton(property - 1).center.y) / 2.0) : ([CaptureDeviceConfigurationPropertyButton(property) intrinsicContentSize].height / 2.0)),
-                                              CaptureDeviceConfigurationPropertyButton(property).frame.size.width,
-                                              CaptureDeviceConfigurationPropertyButton(property).center.y - ((property <= CaptureDeviceConfigurationControlPropertyTorchLevel) ? ((CaptureDeviceConfigurationPropertyButton(property).center.y + CaptureDeviceConfigurationPropertyButton(property + 1).center.y) / 2.0) : ([CaptureDeviceConfigurationPropertyButton(property) intrinsicContentSize].height / 2.0)));
-            [CaptureDeviceConfigurationPropertyButton(property) setSelected:(CGRectContainsPoint(button_region, CGPointMake(CaptureDeviceConfigurationPropertyButton(property).center.x, touch_point.y)))];
+            // Get the angle above and below
+            CGPoint frame_points[2] = {
+                CGPointMake((property < CaptureDeviceConfigurationControlPropertyZoomFactor) ? CaptureDeviceConfigurationPropertyButton(property + 1).frame.origin.x : CaptureDeviceConfigurationPropertyButton(property).frame.origin.x,
+                            (property < CaptureDeviceConfigurationControlPropertyZoomFactor) ? CaptureDeviceConfigurationPropertyButton(property + 1).frame.origin.y : CaptureDeviceConfigurationPropertyButton(property).frame.origin.y),
+                CGPointMake((property > CaptureDeviceConfigurationControlPropertyTorchLevel) ? CaptureDeviceConfigurationPropertyButton(property - 1).frame.size.width : CaptureDeviceConfigurationPropertyButton(property).frame.size.width,
+                            (property > CaptureDeviceConfigurationControlPropertyTorchLevel) ? CaptureDeviceConfigurationPropertyButton(property - 1).frame.size.height : CaptureDeviceConfigurationPropertyButton(property).frame.origin.y + (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height / 2.0))};
+            
+            // Consider an affine transform on the button's frame (this is too much math)
+            CGFloat origin_x = CaptureDeviceConfigurationPropertyButton(property).frame.origin.x - (CaptureDeviceConfigurationPropertyButton(property).frame.origin.x - ((current_center_point.x + frame_points[0].x) / 2.0));
+            CGFloat origin_y = CaptureDeviceConfigurationPropertyButton(property).frame.origin.y - ((CaptureDeviceConfigurationPropertyButton(property).frame.origin.y - frame_points[0].y) / 2.0); // absolute value (the origin specifies the exact coordinate)
+            CGFloat width    = (fabs(origin_x - current_center_point.x) * 2.0);
+            width = (width < CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width) ? CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width : width;
+            CGFloat height   = (fabs(origin_y - current_center_point.y) * 2.0);
+            NSLog(@"origin_y == %f\t\theight == %f", origin_y, CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height);
+            
+            CGRect button_region = CGRectMake(origin_x,
+                                              origin_y,
+                                              width,
+                                              height);
+//            [CaptureDeviceConfigurationPropertyButton(property) setFrame:button_region];
+//            [CaptureDeviceConfigurationPropertyButton(property).layer setFrame:button_region];
+//            [CaptureDeviceConfigurationPropertyButton(property).layer setBorderWidth:1.0];
+//            [CaptureDeviceConfigurationPropertyButton(property).layer setBorderColor:[UIColor redColor].CGColor];
+            [CaptureDeviceConfigurationPropertyButton(property) setSelected:CGRectContainsPoint(button_region, touch_point)];
         };
     };
     return ^ (UITouch * _Nullable touch) {
