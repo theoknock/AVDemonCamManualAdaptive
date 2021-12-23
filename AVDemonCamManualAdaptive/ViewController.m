@@ -47,16 +47,27 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
     const CGFloat max_radius = sqrt(pow((CGRectGetWidth(view.bounds) * 0.6) - center.x, 2.0) + pow((CGRectGetHeight(view.bounds) * 0.6) - center.y, 2.0));
     __block CGFloat radius = max_radius;
     
-    void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
+    return ^ (UITouch * _Nullable touch) {
+        
+        __block CGPoint touch_point;
+        (touch != nil)
+        ? ^{
+            touch_glb = touch;
+            touch_point = [touch_glb preciseLocationInView:touch_glb.view];
+        }()
+        : ^{
+            touch_point = [touch_glb preciseLocationInView:touch_glb.view];
+        }();
         radius = fmaxf(min_radius, fminf(sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0)), max_radius));
-//        radius = rescale(radius, min_radius, max_radius, min_radius, max_radius * 1.1875);
+        //        radius = rescale(radius, min_radius, max_radius, min_radius, max_radius * 1.1875);
         
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
             
-            __block UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                                                      radius:radius
-                                                                                  startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
+            static UIBezierPath * bezier_quad_curve;
+            bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
+                                                               radius:radius
+                                                        startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
             
             CGPoint button_center = [bezier_quad_curve currentPoint];
             [CaptureDeviceConfigurationPropertyButton(property) setCenter:button_center];
@@ -85,41 +96,18 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:selectButton];
                 [CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property) setSelected:!selectButton];
                 
-                (CaptureDeviceConfigurationPropertyButton(property).isSelected && touch_glb.phase == UITouchPhaseEnded) ?:
+                ((touch_glb.phase == UITouchPhaseEnded) && (selectButton)) ?
+                ^{
                     [CaptureDeviceConfigurationPropertyButton(property) sendActionsForControlEvents:UIControlEventTouchUpInside];
+                }() :
+                ^{
+                    
+                }();
             }()
             : ^{
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:FALSE];
             }();
         };
-    };
-    return ^ (UITouch * _Nullable touch) {
-        (touch != nil)
-        ? ^{
-            touch_glb = touch;
-            displayButtons([touch preciseLocationInView:touch.view]);
-        }()
-        : ^{
-            displayButtons([touch_glb preciseLocationInView:touch_glb.view]);
-        }();
-        //        : (touch_glb.phase == UITouchPhaseMoved) ? ^{
-        //            displayButtons([touch_glb locationInView:touch_glb.view]);
-        //        }()
-        //        : ^{
-        //            displayButtons([touch_glb locationInView:touch_glb.view]);
-        //            // send touch event to selected button
-        ////            [(NSArray<__kindof UIButton *> *)view.subviews enumerateObjectsUsingBlock:^(__kindof UIButton * _Nonnull button, CaptureDeviceConfigurationControlProperty property, BOOL * _Nonnull stop) {
-        ////                (button.isSelected)
-        ////                ? ^{
-        ////                    // This should be the "event handler" for the button to avoid lag
-        //////                    [button sendActionsForControlEvents:UIControlEventTouchUpInside];
-        ////                    *stop = TRUE;
-        ////                }()
-        ////                : ^{
-        ////                    //
-        ////                }();
-        ////            }];
-        //        }();
     };
     
 };
