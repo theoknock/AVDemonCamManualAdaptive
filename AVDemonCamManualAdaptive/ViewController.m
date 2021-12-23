@@ -48,20 +48,73 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             
             CGPoint button_center = [bezier_quad_curve currentPoint];
             [CaptureDeviceConfigurationPropertyButton(property) setCenter:button_center];
-            CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point.y > button_center.y) ? (property + ((property != CaptureDeviceConfigurationControlPropertyZoomFactor) ? 1 : 0)) : (property - ((property != CaptureDeviceConfigurationControlPropertyTorchLevel) ? 1 : 0));
-            CGPoint nearest_neighbor_center = CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property).center;
             
-            // TO-DO: Don't even consider whether to select or not select if the touch point is not between the button_center and the nearest_neighbor_center
-            (((touch_point.y > button_center.y) && (touch_point.y < nearest_neighbor_center.y)) || // the nearest neighbor is above
-             ((touch_point.y < button_center.y) && (touch_point.y > nearest_neighbor_center.y)))   // the nearest neighbor is below
-            ?: ^{
-                CGFloat center_midY = button_center.y + fabs(button_center.y - nearest_neighbor_center.y);
-                CGFloat touch_maxY  = button_center.y + fabs(button_center.y - touch_point.y);
-                CaptureDeviceConfigurationControlProperty selection_property   = (((touch_point.y > button_center.y) && (touch_point.y < nearest_neighbor_center.y)) && (center_midY > touch_maxY)) ? nearest_neighbor_property : property;
-                CaptureDeviceConfigurationControlProperty deselection_property = (selection_property == property) ? nearest_neighbor_property : property;
-                [CaptureDeviceConfigurationPropertyButton(selection_property) setSelected:TRUE];
-                [CaptureDeviceConfigurationPropertyButton(deselection_property) setSelected:FALSE];
-            }();
+            CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point.y > button_center.y)
+                                                                                    ? (property != CaptureDeviceConfigurationControlPropertyZoomFactor)
+                                                                                        ? property + 1
+                                                                                        : CaptureDeviceConfigurationControlPropertyZoomFactor
+                                                                                    : (property != CaptureDeviceConfigurationControlPropertyTorchLevel)
+                                                                                        ? property - 1
+                                                                                        : CaptureDeviceConfigurationControlPropertyTorchLevel;
+            CGPoint nearest_neighbor_center = CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property).center;
+//            ((((touch_point.y > button_center.y) || (button_center.y == nearest_neighbor_center.y)) && (touch_point.y < nearest_neighbor_center.y)) || (button_center.y == nearest_neighbor_center.y));
+            CGFloat touch_nearest_neighbor_center_distance = fabs(touch_point.y - nearest_neighbor_center.y);
+            CGFloat touch_button_center_distance           = fabs(touch_point.y - button_center.y);
+            
+            //
+            
+            // Make sure touch point is between button and nearest neighbor centers before selecting/deselecting
+//            __block BOOL select_property, deselect_property;
+            //            (((touch_point.y > button_center.y) && (touch_point.y < nearest_neighbor_center.y)) ||
+            //             ((touch_point.y < button_center.y) && (touch_point.y > nearest_neighbor_center.y)))
+            
+//            ?: (touch_button_center_distance <= touch_nearest_neighbor_center_distance)
+//            ?: ^{ select_property = TRUE;  deselect_property = FALSE; }();
+            //            : ^{ select_property = FALSE; deselect_property = TRUE;  }();
+            //                    : (touch_button_center_distance < touch_nearest_neighbor_center_distance)
+//            ? ^{ select_property = FALSE; deselect_property = TRUE; }();
+//            : ^{ select_property = FALSE; deselect_property = FALSE; }();
+
+//            [CaptureDeviceConfigurationPropertyButton(property) setSelected:select_property];
+//            [CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property) setSelected:deselect_property];
+            
+            // The issue is the touch point's proximity to the button center
+            //      if it is closer to the button center and the center of an adjacent button it is between...
+            //      ...then the button is selected
+            // The next issue is which button is deselected
+            //      It could only be the button adjacent to the selected button on the other side of the touch point...
+            //      The problem is that the center of the adjacent button may not yet be finally determined in cases
+            //      where not all buttons have been updated (if button 3 needs the center point of button 4, but it won't be
+            //      calculated or updated until button 3 is updated, then the calculation that relies on center points will be
+            //      skewed. It is possible that a determination cannot be made as to whether a touch point lies between two center points
+            //      because of the way that is tested and the fact that a center point comparison relies on center points being in
+            //      an order that ensures that there is a quantifiable range of possible touch points between numerically ordered (by tag) buttons
+            // One way around this may be to always use the touch point to calculate the angle at which the touch point extends from the shared center of the arc
+            // By comparing the calculated angle to the constant angle already known, the same determination can be made regardless of center points, updated or otherwise
+            // (regardless of the radius or center point, etc., every button lies at one angle):
+            //
+             double button_angle = 180.0 + (90.0 * ((property) / 4.0));
+            
+             double nearest_neighbor_angle = 180.0 + (90.0 * ((nearest_neighbor_property) / 4.0));
+            //
+            // Calculation for finding the angle given the touch (radius) and center points of a circle
+            // Ranges for the touch-point angle run counter-clockwise to the angles for the button center points (-180 -> -90 != 180 -> 270)
+            // and they are off by 90° without the sign (-90 vs. 270)
+            // and they are negative (i.e., -90 vs. 90)
+            // (in other words, literally the most useless calculation that Satan could invent)
+            
+            CGFloat touch_point_angle = ^ CGFloat (CGPoint intersection_point, CGPoint center_point) {
+                CGFloat radian  = atan2(intersection_point.y - center_point.y, intersection_point.x - center_point.x);
+                CGFloat degrees = radian * (180.0 / M_PI);
+                // adjust degrees to range 180 -> 270
+                if (degrees < 0.0)
+                    degrees += 360.0;
+                return degrees;
+            }(touch_point, center);
+           printf("\n\n\t\t#%lu\nbutton_angle == %f\ntouch_point_angle == %f\nnearest_neighbor_angle == %f\n\n", property, button_angle, touch_point_angle, nearest_neighbor_angle);
+            
+            
+            
             // Calculate nearest neighbor center point
             // if touch_point is higher than center point...
             //      ...nearest neighbor is above
