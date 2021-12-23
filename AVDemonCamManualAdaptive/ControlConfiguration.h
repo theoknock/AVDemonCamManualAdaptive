@@ -125,8 +125,8 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             void (^eventHandlerBlock)(void) = ^{
 //                [button setHighlighted:TRUE];
 //                [UIView animateWithDuration:0.3 animations:^ {
-//                    [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-//                        [b setSelected:(b.tag == button.tag) ? TRUE : FALSE];
+                    [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
+                        [b setSelected:(b.tag == button.tag) ? TRUE : FALSE];
 //                        [b sizeToFit];
 //                        CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].height);
 //                        double angle =
@@ -147,7 +147,7 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
 //                } completion:^(BOOL finished) {
 //                    // draw secondary control
 ////                    UIBezierPath *
-//                }];
+                }];
                 
             };
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
