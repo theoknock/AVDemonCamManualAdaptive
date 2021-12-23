@@ -48,12 +48,20 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             
             CGPoint button_center = [bezier_quad_curve currentPoint];
             [CaptureDeviceConfigurationPropertyButton(property) setCenter:button_center];
-
             CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point.y > button_center.y) ? (property + ((property != CaptureDeviceConfigurationControlPropertyZoomFactor) ? 1 : 0)) : (property - ((property != CaptureDeviceConfigurationControlPropertyTorchLevel) ? 1 : 0));
             CGPoint nearest_neighbor_center = CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property).center;
-            CaptureDeviceConfigurationControlProperty selection_property   = (fabs(nearest_neighbor_center.y - touch_point.y) > fabs(button_center.y - touch_point.y)) ? property : nearest_neighbor_property;
-            CaptureDeviceConfigurationControlProperty deselection_property = (selection_property == property) ? nearest_neighbor_property : property;
             
+            // TO-DO: Don't even consider whether to select or not select if the touch point is not between the button_center and the nearest_neighbor_center
+            (((touch_point.y > button_center.y) && (touch_point.y < nearest_neighbor_center.y)) || // the nearest neighbor is above
+             ((touch_point.y < button_center.y) && (touch_point.y > nearest_neighbor_center.y)))   // the nearest neighbor is below
+            ?: ^{
+                CGFloat center_midY = button_center.y + fabs(button_center.y - nearest_neighbor_center.y);
+                CGFloat touch_maxY  = button_center.y + fabs(button_center.y - touch_point.y);
+                CaptureDeviceConfigurationControlProperty selection_property   = (((touch_point.y > button_center.y) && (touch_point.y < nearest_neighbor_center.y)) && (center_midY > touch_maxY)) ? nearest_neighbor_property : property;
+                CaptureDeviceConfigurationControlProperty deselection_property = (selection_property == property) ? nearest_neighbor_property : property;
+                [CaptureDeviceConfigurationPropertyButton(selection_property) setSelected:TRUE];
+                [CaptureDeviceConfigurationPropertyButton(deselection_property) setSelected:FALSE];
+            }();
             // Calculate nearest neighbor center point
             // if touch_point is higher than center point...
             //      ...nearest neighbor is above
@@ -62,8 +70,7 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             //      ...deselect the button...
             //      ...select the nearest neighbor
             
-            [CaptureDeviceConfigurationPropertyButton(selection_property) setSelected:TRUE];
-            [CaptureDeviceConfigurationPropertyButton(deselection_property) setSelected:FALSE];
+            
         };
     };
     return ^ (UITouch * _Nullable touch) {
