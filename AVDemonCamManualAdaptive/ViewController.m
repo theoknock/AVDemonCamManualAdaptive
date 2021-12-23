@@ -41,9 +41,15 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
     const CGFloat max_angle = 180.0 + (90.0 * ((CaptureDeviceConfigurationControlPropertyZoomFactor) / 4.0));
     
     __block UITouch * touch_glb;
-    CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel) intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor) intrinsicContentSize].height);
+    const CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel) intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor) intrinsicContentSize].height);
+    
+    const CGFloat min_radius = sqrt(pow((CGRectGetWidth(view.bounds) * 0.8) - center.x, 2.0) + pow((CGRectGetHeight(view.bounds) * 0.8) - center.y, 2.0));
+    const CGFloat max_radius = sqrt(pow((CGRectGetWidth(view.bounds) * 0.6) - center.x, 2.0) + pow((CGRectGetHeight(view.bounds) * 0.6) - center.y, 2.0));
+    __block CGFloat radius = max_radius;
+    
     void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
-        CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
+        radius = fmaxf(min_radius, fminf(sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0)), max_radius));
+//        radius = rescale(radius, min_radius, max_radius, min_radius, max_radius * 1.1875);
         
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
@@ -73,12 +79,14 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             : CaptureDeviceConfigurationControlPropertyTorchLevel;
             CGFloat nearest_neighbor_angle = 180.0 + (90.0 * ((nearest_neighbor_property) / 4.0));
             
-            
             ((touch_point_angle >= angle && touch_point_angle <= nearest_neighbor_angle) || (touch_point_angle <= angle && touch_point_angle >= nearest_neighbor_angle)) ?
             ^{
                 BOOL selectButton = (fabs(touch_point_angle - angle) < fabs(touch_point_angle - nearest_neighbor_angle));
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:selectButton];
                 [CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property) setSelected:!selectButton];
+                
+                (CaptureDeviceConfigurationPropertyButton(property).isSelected && touch_glb.phase == UITouchPhaseEnded) ?:
+                    [CaptureDeviceConfigurationPropertyButton(property) sendActionsForControlEvents:UIControlEventTouchUpInside];
             }()
             : ^{
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:FALSE];

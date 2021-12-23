@@ -104,7 +104,6 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             [button = [UIButton new] setTag:property];
             
             [button setBackgroundColor:[UIColor clearColor]];
-//            [button setShowsTouchWhenHighlighted:TRUE];
             
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][idx] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
@@ -123,31 +122,12 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             
         
             void (^eventHandlerBlock)(void) = ^{
-//                [button setHighlighted:TRUE];
-//                [UIView animateWithDuration:0.3 animations:^ {
                     [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-                        [b setSelected:(b.tag == button.tag) ? TRUE : FALSE];
-//                        [b sizeToFit];
-//                        CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].height);
-//                        double angle =
-//                          (button.tag == 0) ? 225.0 + (45.0 * ((b.tag) / 4.0))
-//                        : (button.tag == 1) ? 202.5 + (67.5 * ((b.tag) / 4.0))
-//                        : (button.tag == 2) ? 180.0 + (90.0 * ((b.tag) / 4.0))
-//                        : (button.tag == 3) ? 180.0 + (67.5 * ((b.tag) / 4.0))
-//                        : (button.tag == 4) ? 180.0 + (45.0 * ((b.tag) / 4.0))
-//                        : 180.0 + (90.0 * ((b.tag) / 4.0));
-//
-//                        UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-//                                                                                          radius:(CGRectGetMaxX(UIScreen.mainScreen.bounds) * 0.75)
-//                                                                                      startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
-//                        [b setCenter:[bezier_quad_curve currentPoint]];
-//                    }];
-//                    // To-Do: Add AVCaptureDevice unlockForConfiguration
-//
-//                } completion:^(BOOL finished) {
-//                    // draw secondary control
-////                    UIBezierPath *
+                        [b setSelected:(b.tag == button.tag)];
                 }];
+                
+                // TO-DO: Animate transition from selected button to property-value
+                printf("\nEvent handler for button #%lu\n", button.tag);
                 
             };
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
