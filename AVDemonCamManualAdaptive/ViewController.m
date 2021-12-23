@@ -33,39 +33,40 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
         [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
     
+    __block UITouch * touch_glb;
     CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel) intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor) intrinsicContentSize].height);
     CGRect button_region_ref = CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyLensPosition).frame;
     void (^displayButtons)(CGPoint) = ^ (CGPoint touch_point) {
         CGFloat radius = sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0));
+        
         for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
+            
             __block UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
                                                                                       radius:radius
                                                                                   startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
-            CGPoint current_center_point = CGPointMake(((fabs([bezier_quad_curve currentPoint].x - CaptureDeviceConfigurationPropertyButton(property).center.x) > CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width)  ? [bezier_quad_curve currentPoint].x - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width  / 2.0) : [bezier_quad_curve currentPoint].x ),
-                                                       ((fabs([bezier_quad_curve currentPoint].y - CaptureDeviceConfigurationPropertyButton(property).center.y) < CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height) ? [bezier_quad_curve currentPoint].y - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height / 2.0) : [bezier_quad_curve currentPoint].y ));
-            [CaptureDeviceConfigurationPropertyButton(property) setCenter:current_center_point];
             
-            CGRect current_button_region = CGRectMake(current_center_point.x - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width / 2.0),
-                                                      current_center_point.y - (CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height / 2.0),
-                                                      CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.width,
-                                                      CaptureDeviceConfigurationPropertyButton(property).intrinsicContentSize.height);
-            CGFloat transform_scales[2] = {
-                fabs(CGRectGetMidX(button_region_ref) - CGRectGetMidX(current_button_region)) / CGRectGetMidX(button_region_ref),
-                fabs(CGRectGetMidY(button_region_ref) - CGRectGetMidY(current_button_region)) / CGRectGetMidY(button_region_ref)
-            };
+            CGPoint button_center = [bezier_quad_curve currentPoint];
+            [CaptureDeviceConfigurationPropertyButton(property) setCenter:button_center];
+
+            CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point.y > button_center.y) ? (property + ((property != CaptureDeviceConfigurationControlPropertyZoomFactor) ? 1 : 0)) : (property - ((property != CaptureDeviceConfigurationControlPropertyTorchLevel) ? 1 : 0));
+            CGPoint nearest_neighbor_center = CaptureDeviceConfigurationPropertyButton(nearest_neighbor_property).center;
+            CaptureDeviceConfigurationControlProperty selection_property   = (fabs(nearest_neighbor_center.y - touch_point.y) > fabs(button_center.y - touch_point.y)) ? property : nearest_neighbor_property;
+            CaptureDeviceConfigurationControlProperty deselection_property = (selection_property == property) ? nearest_neighbor_property : property;
             
-            NSLog(@"x == %f\t\ty == %f", transform_scales[0], transform_scales[1]);
+            // Calculate nearest neighbor center point
+            // if touch_point is higher than center point...
+            //      ...nearest neighbor is above
+            // if touch_point is lower than center point, nearest neighbor is below
+            // the difference between the touch point and the midpoint between center points must be greater than half the distance between them to...
+            //      ...deselect the button...
+            //      ...select the nearest neighbor
             
-            static CGRect button_region;
-            button_region = CGRectApplyAffineTransform(button_region_ref, CGAffineTransformMakeScale(transform_scales[0], transform_scales[1]));
-            bezier_quad_curve = [UIBezierPath bezierPathWithRect:button_region_ref];
-            [(CAShapeLayer *)view.layer setPath:bezier_quad_curve.CGPath];
-            [CaptureDeviceConfigurationPropertyButton(property) setSelected:CGRectContainsPoint(button_region, touch_point)];
+            [CaptureDeviceConfigurationPropertyButton(selection_property) setSelected:TRUE];
+            [CaptureDeviceConfigurationPropertyButton(deselection_property) setSelected:FALSE];
         };
     };
     return ^ (UITouch * _Nullable touch) {
-        static UITouch * touch_glb;
         (touch != nil)
         ? ^{
             touch_glb = touch;
