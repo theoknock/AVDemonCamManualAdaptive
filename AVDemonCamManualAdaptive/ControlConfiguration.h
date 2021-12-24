@@ -124,10 +124,11 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             void (^eventHandlerBlock)(void) = ^{
                     [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
                         [b setSelected:(b.tag == button.tag)];
+//                        [b setHidden:!(b.tag == button.tag)];
                 }];
                 
                 // TO-DO: Animate transition from selected button to property-value
-                printf("\nEvent handler for button #%lu\n", button.tag);
+//                printf("\nEvent handler for button #%lu\n", button.tag);
                 
             };
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
