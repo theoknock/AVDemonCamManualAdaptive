@@ -31,9 +31,9 @@ static float rescale(float old_value, float old_min, float old_max, float new_mi
     return (new_max - new_min) * /*(fmax(old_min, fmin(old_value, old_max))*/ (old_value - old_min) / (old_max - old_min) + new_min;
 };
 
-static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
+static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
     CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, view);
-    for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
+    for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyReserved; property++) {
         [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
     
@@ -48,23 +48,14 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
     __block CGFloat radius = max_radius;
     
     return ^ (UITouch * _Nullable touch) {
-        
         __block CGPoint touch_point;
-        (touch != nil)
-        ? ^{
-            touch_glb = touch;
-            touch_point = [touch_glb preciseLocationInView:touch_glb.view];
-            for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
-                [CaptureDeviceConfigurationPropertyButton(property) setHidden:FALSE];
-            }
-        }()
-        : ^{
-            touch_point = [touch_glb preciseLocationInView:touch_glb.view];
-        }();
-        radius = fmaxf(min_radius, fminf(sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0)), max_radius));
-        //        radius = rescale(radius, min_radius, max_radius, min_radius, max_radius * 1.1875);
         
-        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyDefault; property++) {
+        (touch != nil) ? ^{ touch_glb = touch; }() : ^{ }();
+        
+        touch_point = [touch_glb preciseLocationInView:touch_glb.view];
+        radius = fmaxf(min_radius, fminf(sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0)), max_radius));
+        
+        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyReserved; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
             
             static UIBezierPath * bezier_quad_curve;
@@ -86,11 +77,11 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
             
             CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point_angle > angle)
             ? (property != CaptureDeviceConfigurationControlPropertyZoomFactor)
-            ? property + 1
-            : CaptureDeviceConfigurationControlPropertyZoomFactor
+                ? property + 1
+                : CaptureDeviceConfigurationControlPropertyZoomFactor
             : (property != CaptureDeviceConfigurationControlPropertyTorchLevel)
-            ? property - 1
-            : CaptureDeviceConfigurationControlPropertyTorchLevel;
+                ? property - 1
+                : CaptureDeviceConfigurationControlPropertyTorchLevel;
             CGFloat nearest_neighbor_angle = 180.0 + (90.0 * ((nearest_neighbor_property) / 4.0));
             
             ((touch_point_angle >= angle && touch_point_angle <= nearest_neighbor_angle) || (touch_point_angle <= angle && touch_point_angle >= nearest_neighbor_angle)) ?
@@ -110,7 +101,6 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
                     tick_line = [UIBezierPath bezierPath];
                     static UIBezierPath * outer_arc;
                     static UIBezierPath * inner_arc;
-                    // TO-DO: Set radius using the button frame X and Y origins to place the arc control above the buttons
                     CGFloat arc_radius = sqrt(pow(CGRectGetMinX(CaptureDeviceConfigurationPropertyButton(property).frame) - center.x, 2.0) + pow(CGRectGetMinY(CaptureDeviceConfigurationPropertyButton(property).frame) - center.y, 2.0));
                     for (int degrees = 180; degrees < 270; degrees = degrees + 2) { // change degree interval based on radius (),
                         outer_arc = [UIBezierPath bezierPathWithArcCenter:center
@@ -146,11 +136,11 @@ static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _N
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    handle_touch_event(nil);
+    handle_touch_event(touches.anyObject);
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    handle_touch_event(nil);
+    handle_touch_event(touches.anyObject);
 }
 
 //static void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {

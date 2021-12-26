@@ -19,7 +19,7 @@ typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlPropertyExposureDuration,
     CaptureDeviceConfigurationControlPropertyISO,
     CaptureDeviceConfigurationControlPropertyZoomFactor,
-    CaptureDeviceConfigurationControlPropertyDefault
+    CaptureDeviceConfigurationControlPropertyReserved
 } CaptureDeviceConfigurationControlProperty;
 
 static NSArray<NSArray<NSString *> *> * const CaptureDeviceConfigurationControlPropertyImageValues = @[@[@"bolt.circle",
@@ -41,7 +41,9 @@ static NSArray<NSString *> * const CaptureDeviceConfigurationControlPropertyImag
 typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlStateDeselected,
     CaptureDeviceConfigurationControlStateSelected,
-    CaptureDeviceConfigurationControlStateHighlighted // also selected, but centered in the arc area and enlarged to fill
+    CaptureDeviceConfigurationControlStateHighlighted,
+    CaptureDeviceConfigurationControlStateAny
+    // also selected, but centered in the arc area and enlarged to fill
 } CaptureDeviceConfigurationControlState;
 
 static NSString * (^CaptureDeviceConfigurationControlPropertySymbol)(CaptureDeviceConfigurationControlProperty, CaptureDeviceConfigurationControlState) = ^ NSString * (CaptureDeviceConfigurationControlProperty property, CaptureDeviceConfigurationControlState state) {
@@ -92,45 +94,29 @@ static UIImage * (^CaptureDeviceConfigurationControlPropertySymbolImage)(Capture
     return [UIImage systemImageNamed:CaptureDeviceConfigurationControlPropertySymbol(property, state) withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(state)];
 };
 
+//static const NSMutableArray<UIButton *> * buttons;
+static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
+static UIButton * (^CaptureDeviceConfigurationPropertySelectedButton)(void);
 
-typedef UIButton * (^(^PrimaryComponents)(NSArray<NSArray<NSString *> *> * const, typeof(UIView *)))(NSUInteger);
-static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray<NSString *> *> * const, typeof(UIView *)))(CaptureDeviceConfigurationControlProperty) = ^ (NSArray<NSArray<NSString *> *> * const captureDeviceConfigurationControlPropertyImageNames, typeof(UIView *) controlView) {
-    CGFloat button_boundary_length = (CGRectGetMaxX(UIScreen.mainScreen.bounds) - CGRectGetMinX(UIScreen.mainScreen.bounds)) / ((CGFloat)captureDeviceConfigurationControlPropertyImageNames[0].count - 1.0);
-    __block NSMutableArray<UIButton *> * buttons = [[NSMutableArray alloc] initWithCapacity:captureDeviceConfigurationControlPropertyImageNames[0].count];
+static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray<NSString *> *> * const, typeof(UIView *)))(CaptureDeviceConfigurationControlProperty) = ^ (NSArray<NSArray<NSString *> *> * const captureDeviceConfigurationControlPropertyImageNames, typeof(UIView *) controlView) {
+    __block NSMutableArray<UIButton *> * buttons;
+    buttons = [[NSMutableArray alloc] initWithCapacity:captureDeviceConfigurationControlPropertyImageNames[0].count];
     [captureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, NSUInteger idx, BOOL * _Nonnull stop) {
-        
         [buttons addObject:^ (CaptureDeviceConfigurationControlProperty property) {
             UIButton * button;
             [button = [UIButton new] setTag:property];
-            
             [button setBackgroundColor:[UIColor clearColor]];
-            
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][idx] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
-            //            [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][idx] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateHighlighted)] forState:UIControlStateHighlighted];
             [button sizeToFit];
-            CGSize button_size = [button intrinsicContentSize];
-            [button setFrame:CGRectMake(0.0, 0.0,
-                                        button_size.width, button_size.height)];
             
-            CGPoint center = CGPointMake(CGRectGetMaxX(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].width, CGRectGetMaxY(UIScreen.mainScreen.bounds) - [button intrinsicContentSize].height);
-            double angle = 180.0 + (90.0 * ((property) / 4.0));
-            UIBezierPath * bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                                              radius:(CGRectGetMaxX(UIScreen.mainScreen.bounds) * 0.75)
-                                                                          startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
-            [button setCenter:[bezier_quad_curve currentPoint]];
-            
-        
+            [button setUserInteractionEnabled:FALSE];
             void (^eventHandlerBlock)(void) = ^{
-                    [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-                        [b setSelected:(b.tag == button.tag)];
-//                        [b setHidden:!(b.tag == button.tag)];
+                [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
+                    [b setSelected:(b.tag == button.tag)];
                 }];
-                
-                // TO-DO: Animate transition from selected button to property-value
-//                printf("\nEvent handler for button #%lu\n", button.tag);
-                
             };
+
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             [button addTarget:eventHandlerBlock action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
             
@@ -139,11 +125,11 @@ static UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray
             };
         }(idx)()];
     }];
-    return ^ UIButton * (CaptureDeviceConfigurationControlProperty property) {
-        return [buttons objectAtIndex:property];
+    return ^ UIButton * _Nullable (CaptureDeviceConfigurationControlProperty property) {
+        return [buttons objectAtIndex:(property != CaptureDeviceConfigurationControlStateSelected) ? property : [buttons indexOfObjectPassingTest:^BOOL(UIButton * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return (obj.tag == property) ? ^BOOL{ *stop = TRUE; return TRUE; }() : ^BOOL{ return FALSE; }();
+        }]];
     };
 };
-
-static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 
 #endif /* ControlConfiguration_h */
