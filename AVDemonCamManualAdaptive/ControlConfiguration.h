@@ -19,7 +19,7 @@ typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlPropertyExposureDuration,
     CaptureDeviceConfigurationControlPropertyISO,
     CaptureDeviceConfigurationControlPropertyZoomFactor,
-    CaptureDeviceConfigurationControlPropertyReserved
+    CaptureDeviceConfigurationControlPropertySelected
 } CaptureDeviceConfigurationControlProperty;
 
 static NSArray<NSArray<NSString *> *> * const CaptureDeviceConfigurationControlPropertyImageValues = @[@[@"bolt.circle",
@@ -43,7 +43,6 @@ typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlStateSelected,
     CaptureDeviceConfigurationControlStateHighlighted,
     CaptureDeviceConfigurationControlStateAny
-    // also selected, but centered in the arc area and enlarged to fill
 } CaptureDeviceConfigurationControlState;
 
 static NSString * (^CaptureDeviceConfigurationControlPropertySymbol)(CaptureDeviceConfigurationControlProperty, CaptureDeviceConfigurationControlState) = ^ NSString * (CaptureDeviceConfigurationControlProperty property, CaptureDeviceConfigurationControlState state) {
@@ -101,13 +100,13 @@ static UIButton * (^CaptureDeviceConfigurationPropertySelectedButton)(void);
 static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray<NSString *> *> * const, typeof(UIView *)))(CaptureDeviceConfigurationControlProperty) = ^ (NSArray<NSArray<NSString *> *> * const captureDeviceConfigurationControlPropertyImageNames, typeof(UIView *) controlView) {
     __block NSMutableArray<UIButton *> * buttons;
     buttons = [[NSMutableArray alloc] initWithCapacity:captureDeviceConfigurationControlPropertyImageNames[0].count];
-    [captureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, NSUInteger idx, BOOL * _Nonnull stop) {
+    [captureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, CaptureDeviceConfigurationControlProperty property_tag, BOOL * _Nonnull stop) {
         [buttons addObject:^ (CaptureDeviceConfigurationControlProperty property) {
             UIButton * button;
             [button = [UIButton new] setTag:property];
             [button setBackgroundColor:[UIColor clearColor]];
             [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
-            [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][idx] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
+            [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
             [button sizeToFit];
             
             [button setUserInteractionEnabled:FALSE];
@@ -123,11 +122,11 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<N
             return ^ UIButton * (void) {
                 return button;
             };
-        }(idx)()];
+        }(property_tag)()];
     }];
     return ^ UIButton * _Nullable (CaptureDeviceConfigurationControlProperty property) {
-        return [buttons objectAtIndex:(property != CaptureDeviceConfigurationControlStateSelected) ? property : [buttons indexOfObjectPassingTest:^BOOL(UIButton * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            return (obj.tag == property) ? ^BOOL{ *stop = TRUE; return TRUE; }() : ^BOOL{ return FALSE; }();
+        return [buttons objectAtIndex:(property != CaptureDeviceConfigurationControlPropertySelected) ? property : [buttons indexOfObjectPassingTest:^BOOL(UIButton * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return (obj.isSelected) ? ^BOOL{ *stop = TRUE; return TRUE; }() : ^BOOL{ return FALSE; }();
         }]];
     };
 };

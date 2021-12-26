@@ -33,7 +33,7 @@ static float rescale(float old_value, float old_min, float old_max, float new_mi
 
 static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
     CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, view);
-    for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyReserved; property++) {
+    for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
         [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
     
@@ -55,33 +55,29 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
         touch_point = [touch_glb preciseLocationInView:touch_glb.view];
         radius = fmaxf(min_radius, fminf(sqrt(pow(touch_point.x - center.x, 2.0) + pow(touch_point.y - center.y, 2.0)), max_radius));
         
-        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertyReserved; property++) {
+        CGFloat touch_point_angle = ^ CGFloat (CGPoint intersection_point, CGPoint center_point) {
+            CGFloat radian  = atan2(intersection_point.y - center_point.y, intersection_point.x - center_point.x);
+            CGFloat degrees = radian * (180.0 / M_PI);
+            if (degrees < 0.0) degrees += 360.0;
+            degrees = fmaxf(min_angle, fminf(degrees, max_angle));
+            
+            return degrees;
+        }(touch_point, center);
+        
+        for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
             double angle = 180.0 + (90.0 * ((property) / 4.0));
+            [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                                                          radius:radius
+                                                                                                      startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE] currentPoint]];
             
-            static UIBezierPath * bezier_quad_curve;
-            bezier_quad_curve = [UIBezierPath bezierPathWithArcCenter:center
-                                                               radius:radius
-                                                           startAngle:degreesToRadians(angle) endAngle:degreesToRadians(angle) clockwise:FALSE];
-            
-            CGPoint button_center = [bezier_quad_curve currentPoint];
-            [CaptureDeviceConfigurationPropertyButton(property) setCenter:button_center];
-            
-            CGFloat touch_point_angle = ^ CGFloat (CGPoint intersection_point, CGPoint center_point) {
-                CGFloat radian  = atan2(intersection_point.y - center_point.y, intersection_point.x - center_point.x);
-                CGFloat degrees = radian * (180.0 / M_PI);
-                if (degrees < 0.0) degrees += 360.0;
-                degrees = fmaxf(min_angle, fminf(degrees, max_angle));
-                
-                return degrees;
-            }(touch_point, center);
             
             CaptureDeviceConfigurationControlProperty nearest_neighbor_property = (touch_point_angle > angle)
             ? (property != CaptureDeviceConfigurationControlPropertyZoomFactor)
-                ? property + 1
-                : CaptureDeviceConfigurationControlPropertyZoomFactor
+            ? property + 1
+            : CaptureDeviceConfigurationControlPropertyZoomFactor
             : (property != CaptureDeviceConfigurationControlPropertyTorchLevel)
-                ? property - 1
-                : CaptureDeviceConfigurationControlPropertyTorchLevel;
+            ? property - 1
+            : CaptureDeviceConfigurationControlPropertyTorchLevel;
             CGFloat nearest_neighbor_angle = 180.0 + (90.0 * ((nearest_neighbor_property) / 4.0));
             
             ((touch_point_angle >= angle && touch_point_angle <= nearest_neighbor_angle) || (touch_point_angle <= angle && touch_point_angle >= nearest_neighbor_angle)) ?
@@ -93,42 +89,38 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             : ^{
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:FALSE];
             }();
-            
-            ((touch_glb.phase == UITouchPhaseEnded) && (CaptureDeviceConfigurationPropertyButton(property).isSelected))
-            ? ^{
-                [(CAShapeLayer *)view.layer setPath:
-                 ^ CGPathRef (void) {
-                    tick_line = [UIBezierPath bezierPath];
-                    static UIBezierPath * outer_arc;
-                    static UIBezierPath * inner_arc;
-                    CGFloat arc_radius = sqrt(pow(CGRectGetMinX(CaptureDeviceConfigurationPropertyButton(property).frame) - center.x, 2.0) + pow(CGRectGetMinY(CaptureDeviceConfigurationPropertyButton(property).frame) - center.y, 2.0));
-                    for (int degrees = 180; degrees < 270; degrees = degrees + 2) { // change degree interval based on radius (),
-                        outer_arc = [UIBezierPath bezierPathWithArcCenter:center
-                                                                   radius:arc_radius
-                                                               startAngle:degreesToRadians(degrees)
-                                                                 endAngle:degreesToRadians(degrees)
-                                                                clockwise:FALSE];
-                        inner_arc = [UIBezierPath bezierPathWithArcCenter:center
-                                                                   radius:arc_radius - 10.0
-                                                               startAngle:degreesToRadians(degrees)
-                                                                 endAngle:degreesToRadians(degrees)
-                                                                clockwise:FALSE];
-                        
-                        [tick_line moveToPoint:[outer_arc currentPoint]];
-                        [tick_line addLineToPoint:[inner_arc currentPoint]];
-                    }
-                    return tick_line.CGPath;
-                }()];
-                [CaptureDeviceConfigurationPropertyButton(property) sendActionsForControlEvents:UIControlEventTouchUpInside];
-            }()
-            : ((touch_glb.phase == UITouchPhaseBegan) && !CaptureDeviceConfigurationPropertyButton(property).isSelected)
-            ? ^{
-                [(CAShapeLayer *)view.layer setPath:nil];
-            }()
-            : ^{}();
         };
+        
+        ((touch_glb.phase == UITouchPhaseEnded) && CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected))
+         ? ^{
+            [(CAShapeLayer *)view.layer setPath:
+             ^ CGPathRef (void) {
+                tick_line = [UIBezierPath bezierPath];
+                CGFloat arc_radius = sqrt(pow(CGRectGetMinX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).frame) - center.x, 2.0) + pow(CGRectGetMinY(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).frame) - center.y, 2.0));
+                for (int degrees = 180; degrees < 270; degrees = degrees + 2) { // change degree interval based on radius
+                    [tick_line moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                           radius:arc_radius
+                                                                       startAngle:degreesToRadians(degrees)
+                                                                         endAngle:degreesToRadians(degrees)
+                                                                        clockwise:FALSE] currentPoint]];
+                    
+                    [tick_line addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                              radius:arc_radius * .975
+                                                                          startAngle:degreesToRadians(degrees)
+                                                                            endAngle:degreesToRadians(degrees)
+                                                                           clockwise:FALSE] currentPoint]];
+                }
+                return tick_line.CGPath;
+            }()];
+            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) sendActionsForControlEvents:UIControlEventTouchUpInside];
+        }()
+         : (touch_glb.phase == UITouchPhaseBegan)
+         ? ^{
+            [(CAShapeLayer *)view.layer setPath:nil];
+        }()
+         :
+         ^{}();
     };
-    
 };
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
