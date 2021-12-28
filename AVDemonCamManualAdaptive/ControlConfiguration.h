@@ -113,7 +113,6 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<N
             void (^eventHandlerBlock)(void) = ^{
                 CaptureDeviceConfigurationControlProperty next_property = (button.tag + 1) % 4;
                 BOOL hideButton = !([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]);
-//                
                 [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
                     [b setHidden:hideButton && (b.tag != button.tag)];
                 }];

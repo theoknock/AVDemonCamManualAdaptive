@@ -120,7 +120,7 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) sendActionsForControlEvents:UIControlEventTouchUpInside];
             CaptureDeviceConfigurationControlProperty next_property = (CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag + 1) % 4;
             if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
-                (control_renderer = tick_wheel_renderer_init(&touch_point_angle, radius, &touch_point_property))();
+                (control_renderer = tick_wheel_renderer_init(&touch_point_angle, radius, &touch_point_property)) ();
                 [(CAShapeLayer *)view.layer setPath:
                  ^ CGPathRef (void) {
                     tick_line = [UIBezierPath bezierPath];
@@ -142,6 +142,7 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
                 tick_line = nil;
                 [(CAShapeLayer *)view.layer setPath:nil];
                 (control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property))();
+                [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setSelected:FALSE];
             }
         }
     };
