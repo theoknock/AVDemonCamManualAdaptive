@@ -36,11 +36,7 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
     button_group_size = CGSizeZero;
     CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons(CaptureDeviceConfigurationControlPropertyImageValues, view);
     for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
-        UIButton * button = CaptureDeviceConfigurationPropertyButton(property);
-        button_group_size = CGSizeMake(button.intrinsicContentSize.width + button_group_size.width, button.intrinsicContentSize.height + button_group_size.height);
-        [view addSubview:button];
-        [button.layer setBorderWidth:0.25];
-        [button.layer setBorderColor:[UIColor redColor].CGColor];
+        [view addSubview:CaptureDeviceConfigurationPropertyButton(property)];
     }
     
 //    CGRect view_frame = CGRectMake(CGRectGetMinX(view.bounds),
@@ -211,8 +207,8 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
         [(CAShapeLayer *)self.layer setStrokeColor:[UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0].CGColor];
         [(CAShapeLayer *)self.layer setFillColor:[UIColor clearColor].CGColor];
         [(CAShapeLayer *)self.layer setBackgroundColor:[UIColor clearColor].CGColor];
-        [(CAShapeLayer *)self.layer setBorderWidth:0.5];
-        [(CAShapeLayer *)self.layer setBorderColor:[UIColor redColor].CGColor];
+//        [(CAShapeLayer *)self.layer setBorderWidth:0.5];
+//        [(CAShapeLayer *)self.layer setBorderColor:[UIColor redColor].CGColor];
         
         handle_touch_event = handle_touch_event_init(self);
         [self.layer setNeedsDisplay];
