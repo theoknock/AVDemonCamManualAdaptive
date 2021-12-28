@@ -109,14 +109,18 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<N
             [button sizeToFit];
             
             [button setUserInteractionEnabled:FALSE];
+//            UISelectionFeedbackGenerator * haptic_feedback = [[UISelectionFeedbackGenerator alloc] init];
+//            [haptic_feedback prepare];
             void (^eventHandlerBlock)(void) = ^{
-                [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-                    [b setSelected:(b.tag == button.tag)];
-                }];
+//                [haptic_feedback selectionChanged];
+//                [haptic_feedback prepare];
+//                [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
+//                    [b setSelected:(b.tag == button.tag)];
+//                }];
             };
 
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            [button addTarget:eventHandlerBlock action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
+            [button addTarget:eventHandlerBlock action:@selector(invoke) forControlEvents:UIControlEventTouchDragInside];
             
             return ^ UIButton * (void) {
                 return button;
