@@ -109,14 +109,12 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<N
             [button sizeToFit];
             
             [button setUserInteractionEnabled:FALSE];
-//            UISelectionFeedbackGenerator * haptic_feedback = [[UISelectionFeedbackGenerator alloc] init];
-//            [haptic_feedback prepare];
             void (^eventHandlerBlock)(void) = ^{
-//                [haptic_feedback selectionChanged];
-//                [haptic_feedback prepare];
+                CaptureDeviceConfigurationControlProperty next_property = (button.tag + 1) % 4;
+                BOOL hideButton = !([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]);
+//                
                 [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-//                    [b setSelected:(b.tag == button.tag)];
-                    [b setHidden:!b.hidden];
+                    [b setHidden:hideButton && (b.tag != button.tag)];
                 }];
             };
 

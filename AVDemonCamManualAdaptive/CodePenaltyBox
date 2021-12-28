@@ -1,0 +1,50 @@
+    void (^(^tick_wheel_renderer_init)(double, CaptureDeviceConfigurationControlProperty *, double *, UITouchPhase *))(void) = ^ (double radius, CaptureDeviceConfigurationControlProperty * touch_point_property, double * touch_point_angle, UITouchPhase * touch_phase){
+        static UIBezierPath * tick_line;
+        static double angle_offset;
+        static double value_angle;
+        value_angle = 225.0;
+        return ^{
+            if (touch_phase == UITouchPhaseBegan) {
+                angle_offset = value_angle - (double)*touch_point_angle;
+            } else {
+                if ((double)*touch_point_angle + angle_offset < value_angle) {
+                    value_angle = value_angle - 1;
+                } else {
+                    value_angle = value_angle + 1;
+                }
+            }
+            [(CAShapeLayer *)view.layer setPath:
+             ^ CGPathRef (void) {
+//                tick_line = [UIBezierPath bezierPath];
+                for (int degrees = 180; degrees < 270; degrees++) {
+                    [tick_line moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                           radius:radius
+                                                                       startAngle:degreesToRadians(degrees)
+                                                                          endAngle:degreesToRadians(degrees)
+                                                                         clockwise:FALSE] currentPoint]];
+                    
+                    if (degrees == (int)value_angle) { // change to if touch_angle == value_angle
+                        [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[tick_line currentPoint]];
+                    }
+                    
+                    [tick_line addArcWithCenter:center
+                                         radius:radius * .975
+                                     startAngle:degreesToRadians(degrees)
+                                       endAngle:degreesToRadians(degrees)
+                                      clockwise:FALSE];
+                }
+                return tick_line.CGPath;
+            }()];
+        };
+    };
+
+
+
+/////////////
+
+
+
+//            UISelectionFeedbackGenerator * haptic_feedback = [[UISelectionFeedbackGenerator alloc] init];
+//            [haptic_feedback prepare];
+//                [haptic_feedback selectionChanged];
+//                [haptic_feedback prepare];
