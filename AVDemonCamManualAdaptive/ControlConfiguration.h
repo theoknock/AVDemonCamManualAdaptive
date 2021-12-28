@@ -19,7 +19,8 @@ typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlPropertyExposureDuration,
     CaptureDeviceConfigurationControlPropertyISO,
     CaptureDeviceConfigurationControlPropertyZoomFactor,
-    CaptureDeviceConfigurationControlPropertySelected
+    CaptureDeviceConfigurationControlPropertySelected,
+    CaptureDeviceConfigurationControlPropertyHidden
 } CaptureDeviceConfigurationControlProperty;
 
 static NSArray<NSArray<NSString *> *> * const CaptureDeviceConfigurationControlPropertyImageValues = @[@[@"bolt.circle",

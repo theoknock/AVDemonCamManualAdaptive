@@ -52,18 +52,26 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
     
     const CGPoint center = CGPointMake(CGRectGetMaxX(view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.y);
     
-    void (^(^button_arc_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(void) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property){
-        return ^ {
-            // TO-DO: Instead of a for loop, set center of selected button to touch_point/radius/angle if the path property of the shape layer is not nil
-            for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
-                
-                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                                                              radius:*radius
-                                                                                                          startAngle:degreesToRadians(((double *)(&angle))[property])
-                                                                                                            endAngle:degreesToRadians(((double *)(&angle))[property])
-                                                                                                           clockwise:FALSE] currentPoint]];
-                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == *touch_point_property)]; // && !([CaptureDeviceConfigurationPropertyButton(property) isHidden]))];
-            };
+    void (^(^button_arc_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(void) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
+        return ^{
+                for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
+                    [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                                                                  radius:*radius
+                                                                                                              startAngle:degreesToRadians(((double *)(&angle))[property])
+                                                                                                                endAngle:degreesToRadians(((double *)(&angle))[property])
+                                                                                                               clockwise:FALSE] currentPoint]];
+                    [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == *touch_point_property)]; // && !([CaptureDeviceConfigurationPropertyButton(property) isHidden]))];
+                }
+        };
+    };
+    
+    void (^(^tick_wheel_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(void) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
+        return ^{
+            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                                                                                                       radius:*radius
+                                                                                                                                                   startAngle:degreesToRadians(((double *)(&angle))[CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag])
+                                                                                                                                                     endAngle:degreesToRadians(((double *)(&angle))[CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag])
+                                                                                                                                                    clockwise:FALSE] currentPoint]];
         };
     };
     
@@ -112,11 +120,11 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) sendActionsForControlEvents:UIControlEventTouchUpInside];
             CaptureDeviceConfigurationControlProperty next_property = (CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag + 1) % 4;
             if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
+                control_renderer = tick_wheel_renderer_init(&touch_point_angle, &radius, &touch_point_property);
                 [(CAShapeLayer *)view.layer setPath:
                  ^ CGPathRef (void) {
                     tick_line = [UIBezierPath bezierPath];
                     for (int degrees = 180; degrees < 270; degrees++) {
-                        
                         [tick_line moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
                                                                                radius:radius
                                                                            startAngle:degreesToRadians(degrees)
@@ -133,6 +141,7 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             } else {
                 tick_line = nil;
                 [(CAShapeLayer *)view.layer setPath:nil];
+                control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property);
             }
         }
     };
