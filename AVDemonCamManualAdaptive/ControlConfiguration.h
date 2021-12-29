@@ -23,7 +23,7 @@ typedef enum : NSUInteger {
     CaptureDeviceConfigurationControlPropertyHidden
 } CaptureDeviceConfigurationControlProperty;
 
-static NSArray<NSArray<NSString *> *> * const CaptureDeviceConfigurationControlPropertyImageValues = @[@[@"bolt.circle",
+static NSArray<NSArray<NSString *> *> * const CaptureDeviceConfigurationControlPropertyImageNames = @[@[@"bolt.circle",
                                                                                                          @"viewfinder.circle",
                                                                                                          @"timer",
                                                                                                          @"camera.aperture",
@@ -47,7 +47,7 @@ typedef enum : NSUInteger {
 } CaptureDeviceConfigurationControlState;
 
 static NSString * (^CaptureDeviceConfigurationControlPropertySymbol)(CaptureDeviceConfigurationControlProperty, CaptureDeviceConfigurationControlState) = ^ NSString * (CaptureDeviceConfigurationControlProperty property, CaptureDeviceConfigurationControlState state) {
-    return CaptureDeviceConfigurationControlPropertyImageValues[state][property];
+    return CaptureDeviceConfigurationControlPropertyImageNames[state][property];
 };
 
 static NSString * (^CaptureDeviceConfigurationControlPropertyString)(CaptureDeviceConfigurationControlProperty) = ^ NSString * (CaptureDeviceConfigurationControlProperty property) {
@@ -97,16 +97,16 @@ static UIImage * (^CaptureDeviceConfigurationControlPropertySymbolImage)(Capture
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 static UIButton * (^CaptureDeviceConfigurationPropertySelectedButton)(void);
 
-static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(NSArray<NSArray<NSString *> *> * const, typeof(UIView *)))(CaptureDeviceConfigurationControlProperty) = ^ (NSArray<NSArray<NSString *> *> * const captureDeviceConfigurationControlPropertyImageNames, typeof(UIView *) controlView) {
+static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(void))(CaptureDeviceConfigurationControlProperty) = ^ (void) {
     __block NSMutableArray<UIButton *> * buttons;
-    buttons = [[NSMutableArray alloc] initWithCapacity:captureDeviceConfigurationControlPropertyImageNames[0].count];
-    [captureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, CaptureDeviceConfigurationControlProperty property_tag, BOOL * _Nonnull stop) {
+    buttons = [[NSMutableArray alloc] initWithCapacity:CaptureDeviceConfigurationControlPropertyImageNames[0].count];
+    [CaptureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, CaptureDeviceConfigurationControlProperty property_tag, BOOL * _Nonnull stop) {
         [buttons addObject:^ (CaptureDeviceConfigurationControlProperty property) {
             UIButton * button;
             [button = [UIButton new] setTag:property];
             [button setBackgroundColor:[UIColor clearColor]];
-            [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
-            [button setImage:[UIImage systemImageNamed:captureDeviceConfigurationControlPropertyImageNames[1][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
+            [button setImage:[UIImage systemImageNamed:CaptureDeviceConfigurationControlPropertyImageNames[0][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateDeselected)] forState:UIControlStateNormal];
+            [button setImage:[UIImage systemImageNamed:CaptureDeviceConfigurationControlPropertyImageNames[1][property] withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(CaptureDeviceConfigurationControlStateSelected)] forState:UIControlStateSelected];
             [button sizeToFit];
             
             [button setUserInteractionEnabled:FALSE];
