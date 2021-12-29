@@ -165,39 +165,27 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
 
 - (void)drawRect:(CGRect)rect
 {
-    UIBezierPath * tick_wheel = [UIBezierPath bezierPath];
-    for (int degrees = 180; degrees < touch_point_angle; degrees++) {
-        [tick_wheel moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                radius:radius
-                                                            startAngle:degreesToRadians(degrees)
-                                                              endAngle:degreesToRadians(degrees)
-                                                             clockwise:FALSE] currentPoint]];
-        [tick_wheel addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                   radius:radius * 0.975
-                                                               startAngle:degreesToRadians(degrees)
-                                                                 endAngle:degreesToRadians(degrees)
-                                                                clockwise:FALSE] currentPoint]];
-        [tick_wheel closePath];
+    UIBezierPath * path[2] = {[UIBezierPath bezierPath], [UIBezierPath bezierPath]};
+    int degrees[2] = {180, (int)round(touch_point_angle)};
+    int end[2] = {(int)round(touch_point_angle), 270};
+    UIColor * color[2] = {[UIColor redColor], [UIColor blueColor]};
+    for (int i = 0; i < 2; i++) {
+        for (; degrees[i] < end[i]; degrees[i]++) {
+            [path[i] moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                 radius:radius
+                                                             startAngle:degreesToRadians(degrees[i])
+                                                               endAngle:degreesToRadians(degrees[i])
+                                                              clockwise:FALSE] currentPoint]];
+            [path[i] addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+                                                                    radius:radius * 0.975
+                                                                startAngle:degreesToRadians(degrees[i])
+                                                                  endAngle:degreesToRadians(degrees[i])
+                                                                 clockwise:FALSE] currentPoint]];
+            [path[i] closePath];
+        }
+        [color[i] setStroke];
+        [path[i] stroke];
     }
-    [[UIColor redColor] setStroke];
-    [tick_wheel stroke];
-    
-    UIBezierPath * tick_wheel_ = [UIBezierPath bezierPath];
-    for (int degrees = touch_point_angle; degrees < 270; degrees++) {
-        [tick_wheel_ moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                               radius:radius
-                                                           startAngle:degreesToRadians(degrees)
-                                                             endAngle:degreesToRadians(degrees)
-                                                            clockwise:FALSE] currentPoint]];
-        [tick_wheel_ addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                  radius:radius * 0.975
-                                                              startAngle:degreesToRadians(degrees)
-                                                                endAngle:degreesToRadians(degrees)
-                                                               clockwise:FALSE] currentPoint]];
-        [tick_wheel_ closePath];
-    }
-    [[UIColor blueColor] setStroke];
-    [tick_wheel_ stroke];
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
@@ -224,12 +212,6 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
             [self setTranslatesAutoresizingMaskIntoConstraints:FALSE];
             [self setBackgroundColor:[UIColor clearColor]];
             [self setOpaque:FALSE];
-////            [(CAShapeLayer *)self.layer setLineWidth:2.25];
-////            [(CAShapeLayer *)self.layer setStrokeColor:[UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0].CGColor];
-////            [(CAShapeLayer *)self.layer setFillColor:[UIColor clearColor].CGColor];
-////            [(CAShapeLayer *)self.layer setBackgroundColor:[UIColor clearColor].CGColor];
-////            [(CAShapeLayer *)self.layer setBorderWidth:0.5];
-//            [(CAShapeLayer *)self.layer setBorderColor:[UIColor redColor].CGColor];
         };
         
         {
@@ -237,7 +219,7 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
             CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
             center = CGPointMake(CGRectGetMaxX(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
             radius = CGRectGetMidX(self.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds);
-            [UIView animateWithDuration:3.0 delay:0.0 usingSpringWithDamping:1.0 initialSpringVelocity:1.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            [UIView animateWithDuration:2.0 delay:0.0 usingSpringWithDamping:1.0 initialSpringVelocity:1.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
                 for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                     [self addSubview:CaptureDeviceConfigurationPropertyButton(property)];
                     [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
