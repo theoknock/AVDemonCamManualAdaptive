@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ControlView: UIView
 
+@property (nonatomic, strong) AVCaptureDevice * captureDevice;
+
 @end
 
 NS_ASSUME_NONNULL_END

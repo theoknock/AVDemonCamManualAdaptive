@@ -26,50 +26,64 @@ static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
     return x;
 };
 
-static CGPoint center;
-static double radius;
-static double touch_point_angle;
-static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConfigurationControlProperty) = ^ double (CaptureDeviceConfigurationControlProperty property) {
-    return (double)(180.0 + (90.0 * ((double)property / 4.0)));
-};
-
-static float rescale(float old_value, float old_min, float old_max, float new_min, float new_max) {
+static double rescale(double old_value, double old_min, double old_max, double new_min, double new_max) {
     return (new_max - new_min) * /*(fmax(old_min, fmin(old_value, old_max))*/ (old_value - old_min) / (old_max - old_min) + new_min;
 };
 
-static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
+static CGPoint center;
+static double radius;
+static double touch_point_angle;
+static double property_value_angle;
 
-    void (^(^button_arc_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(dispatch_block_t) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
-        return ^ (dispatch_block_t draw_view) {
+static CaptureDeviceConfigurationControlProperty touch_point_property;
+static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConfigurationControlProperty) = ^ double (CaptureDeviceConfigurationControlProperty property) {
+    static double button_angle;
+    button_angle = (double)(180.0 + (90.0 * ((double)property / 4.0)));
+    return button_angle;
+};
+static double (^CaptureDeviceConfigurationPropertyValueAngle)(double[3]) = ^ double (double capture_device_configuration_property_value_angle_arguments[3]) {
+    double rescaled_angle = rescale(capture_device_configuration_property_value_angle_arguments[0], capture_device_configuration_property_value_angle_arguments[1], capture_device_configuration_property_value_angle_arguments[2], CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor));
+    rescaled_angle = fmax(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fmin(rescaled_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
+    
+    return rescaled_angle;
+};
+static void (^(^control_renderer[2])(void))(AVCaptureDevice *, dispatch_block_t) = {^{
+    return ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * tpp) {
+        return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
             for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
-                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                                                              radius:*radius
-                                                                                                          startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property))
-                                                                                                            endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property))
-                                                                                                           clockwise:FALSE] currentPoint]];
-                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == *touch_point_property)];
+                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:*radius startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) clockwise:FALSE]
+                                                                               currentPoint]];
+                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == touch_point_property)];
             }
             draw_view();
         };
-    };
+    }(&touch_point_angle, &radius, &touch_point_property);
+},
+    ^{
+        return ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
+            return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
+                double property_value_radians = degreesToRadians(CaptureDeviceConfigurationPropertyValueAngle((*touch_point_property == CaptureDeviceConfigurationControlPropertyTorchLevel)
+                                                                                                              ? (double[3]){[capture_device torchLevel], 0.0, 1.0}
+                                                                                                              : (*touch_point_property == CaptureDeviceConfigurationControlPropertyLensPosition)
+                                                                                                              ? (double[3]){[capture_device lensPosition], 0.0, 1.0}
+                                                                                                              : (*touch_point_property == CaptureDeviceConfigurationControlPropertyExposureDuration)
+                                                                                                              ? (double[3]){CMTimeGetSeconds([capture_device exposureDuration]), CMTimeGetSeconds(capture_device.activeFormat.minExposureDuration), 1.0/3.0}
+                                                                                                              : (*touch_point_property == CaptureDeviceConfigurationControlPropertyISO)
+                                                                                                              ? (double[3]){capture_device.ISO, capture_device.activeFormat.minISO, capture_device.activeFormat.maxISO}
+                                                                                                              : (*touch_point_property == CaptureDeviceConfigurationControlPropertyZoomFactor)
+                                                                                                              ? (double[3]){capture_device.videoZoomFactor, capture_device.minAvailableVideoZoomFactor, capture_device.maxAvailableVideoZoomFactor}
+                                                                                                              : (double[3]){CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)}));
+                [CaptureDeviceConfigurationPropertyButton(*touch_point_property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:*radius startAngle:property_value_radians endAngle:property_value_radians clockwise:FALSE]
+                                                                                                                        currentPoint]];
+                draw_view();
+            };
+        }(&touch_point_angle, &radius, &touch_point_property);
+    }
+};
 
-    void (^(^tick_wheel_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(dispatch_block_t) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
-        return ^ (dispatch_block_t draw_view) {
-            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                                                                                                   radius:*radius
-                                                                                                                                               startAngle:degreesToRadians(*touch_point_angle)
-                                                                                                                                                 endAngle:degreesToRadians(*touch_point_angle)
-                                                                                                                                                clockwise:FALSE] currentPoint]];
-            draw_view();
-        };
-    };
-    
-    static CaptureDeviceConfigurationControlProperty touch_point_property;
-    static void (^control_renderer)(dispatch_block_t);
-    control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property);
-    
-    
-    
+static void (^render_control)(AVCaptureDevice *, dispatch_block_t);
+
+void (^(^touch_event_handler)(__kindof __weak UIView *, AVCaptureDevice *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view, AVCaptureDevice * capture_device) {
     return ^ (UITouch * _Nullable touch) {
         static UITouch * touch_glb;
         static CGPoint touch_point;
@@ -103,20 +117,21 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
         }();
         
-        control_renderer(^{ [view setNeedsDisplay]; });
+        render_control(capture_device, ^{ [view setNeedsDisplay]; });
         
         if (touch_glb.phase == UITouchPhaseEnded) {
-            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) sendActionsForControlEvents:UIControlEventTouchUpInside];
-            CaptureDeviceConfigurationControlProperty next_property = (CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag + 1) % 4;
+            [CaptureDeviceConfigurationPropertyButton(touch_point_property) sendActionsForControlEvents:UIControlEventTouchUpInside];
+            CaptureDeviceConfigurationControlProperty next_property = (touch_point_property + 1) % 4;
             if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
-                (control_renderer = tick_wheel_renderer_init(&touch_point_angle, &radius, &touch_point_property))(^{ [view setNeedsDisplay]; });
+                (render_control = control_renderer[0]())(capture_device, ^{ [view setNeedsDisplay]; });
             } else {
-                (control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property))(^{ [view setNeedsDisplay]; });
-                [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setSelected:FALSE];
+                render_control = control_renderer[1]();
             }
         }
     };
 };
+
+static void (^handle_touch_event)(UITouch * _Nullable);
 
 - (void)drawRect:(CGRect)rect
 {
@@ -155,8 +170,6 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
     handle_touch_event(touches.anyObject);
 }
 
-static const void (^handle_touch_event)(UITouch * _Nullable);
-
 + (Class)layerClass {
     return [CAShapeLayer class];
 }
@@ -169,8 +182,8 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
             [self setOpaque:FALSE];
         };
         
+        [self setUserInteractionEnabled:FALSE];
         {
-            [self setUserInteractionEnabled:FALSE];
             CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
             center = CGPointMake(CGRectGetMaxX(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
             radius = CGRectGetMidX(self.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds);
@@ -185,10 +198,11 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
                 }
             } completion:^(BOOL finished) {
                 [self setNeedsDisplay];
-                handle_touch_event = handle_touch_event_init(self);
-                [self setUserInteractionEnabled:TRUE];
             }];
-        };
+        }
+        [self setUserInteractionEnabled:TRUE];
+        render_control = control_renderer[0]();
+        handle_touch_event = touch_event_handler(self, self.captureDevice);
     }
     
     return self;
@@ -212,7 +226,6 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
 @interface ViewController ()
 {
     AVCaptureSession           * captureSession;
-    AVCaptureDevice            * captureDevice;
     AVCaptureDeviceInput       * captureInput;
     AVCaptureConnection        * captureConnection;
     AVCaptureVideoPreviewLayer * capturePreview;
@@ -243,10 +256,10 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
     [captureSession = [[AVCaptureSession alloc] init] setSessionPreset:([captureSession canSetSessionPreset:AVCaptureSessionPreset3840x2160]) ? AVCaptureSessionPreset3840x2160 : AVCaptureSessionPreset1920x1080];
     [captureSession beginConfiguration];
     {
-        [captureInput  = [AVCaptureDeviceInput deviceInputWithDevice:[captureDevice = [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInDualCamera mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionBack] self] error:nil] setUnifiedAutoExposureDefaultsEnabled:TRUE];
+        [captureInput  = [AVCaptureDeviceInput deviceInputWithDevice:[((ControlView *)((CameraView *)self.view).subviews.firstObject).captureDevice = [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInDualCamera mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionBack] self] error:nil] setUnifiedAutoExposureDefaultsEnabled:TRUE];
         [captureSession addInput:([captureSession canAddInput:captureInput]) ? captureInput : nil];
         
-        videoDimensions = CMVideoFormatDescriptionGetPresentationDimensions(captureDevice.activeFormat.formatDescription, TRUE, FALSE);
+        videoDimensions = CMVideoFormatDescriptionGetPresentationDimensions(((ControlView *)((CameraView *)self.view).subviews.firstObject).captureDevice.activeFormat.formatDescription, TRUE, FALSE);
         //        CGFloat video_maxY   = videoDimensions.height;
         //        CGFloat height_scale = (CGRectGetHeight(UIScreen.mainScreen.bounds) / videoDimensions.height); // the screen height is this many times smaller than the video height
         
@@ -258,7 +271,6 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
     }
     [captureSession commitConfiguration];
     [captureSession startRunning];
-    [captureDevice lockForConfiguration:nil];
 }
 
 @end
