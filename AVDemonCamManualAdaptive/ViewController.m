@@ -39,8 +39,8 @@ static float rescale(float old_value, float old_min, float old_max, float new_mi
 
 static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view) {
 
-    void (^(^button_arc_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(void) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
-        return ^{
+    void (^(^button_arc_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(dispatch_block_t) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
+        return ^ (dispatch_block_t draw_view) {
             for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                 [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
                                                                                                               radius:*radius
@@ -49,68 +49,23 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
                                                                                                            clockwise:FALSE] currentPoint]];
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == *touch_point_property)];
             }
+            draw_view();
         };
     };
 
-    void (^(^tick_wheel_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(void) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
-        const CGColorRef (^stroke_color)(BOOL) = ^ CGColorRef (BOOL highlight_color) {
-            return (highlight_color) ? [UIColor yellowColor].CGColor : [UIColor blueColor].CGColor;
-        };
-        return ^{
+    void (^(^tick_wheel_renderer_init)(double *, double *, CaptureDeviceConfigurationControlProperty *))(dispatch_block_t) = ^ (double * touch_point_angle, double * radius, CaptureDeviceConfigurationControlProperty * touch_point_property) {
+        return ^ (dispatch_block_t draw_view) {
             [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[[UIBezierPath bezierPathWithArcCenter:center
                                                                                                                                                    radius:*radius
                                                                                                                                                startAngle:degreesToRadians(*touch_point_angle)
                                                                                                                                                  endAngle:degreesToRadians(*touch_point_angle)
                                                                                                                                                 clockwise:FALSE] currentPoint]];
-            
-            
-//            __block CGMutablePathRef path = CGPathCreateMutable();
-//            __block UIBezierPath * tick_wheel;
-//            tick_wheel = [UIBezierPath bezierPath];
-//            CGPathAddPath(tick_wheel, nil, ^ CGPathRef (int start, int end) {
-//                for (int degrees = start; degrees < end; degrees++) {
-//                    [(CAShapeLayer *)view.layer setStrokeColor:stroke_color(TRUE)];
-//
-//                    [tick_wheel moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-//                                                                           radius:*radius
-//                                                                       startAngle:degreesToRadians(degrees)
-//                                                                         endAngle:degreesToRadians(degrees)
-//                                                                        clockwise:FALSE] currentPoint]];
-//                    [tick_wheel addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-//                                                                              radius:*radius * 0.975
-//                                                                          startAngle:degreesToRadians(degrees)
-//                                                                            endAngle:degreesToRadians(degrees)
-//                                                                           clockwise:FALSE] currentPoint]];
-//                    [tick_wheel closePath];
-//                }
-//                return [tick_wheel CGPath];
-//            }(180, (int)round(*touch_point_angle)));
-//            CGPathAddPath(path, nil, ^ CGPathRef (int start, int end) {
-//                for (int degrees = start; degrees < end; degrees++) {
-//                    [(CAShapeLayer *)view.layer setStrokeColor:stroke_color(FALSE)];
-//                    tick_wheel = [UIBezierPath bezierPath];
-//
-//                    [tick_wheel moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-//                                                                           radius:*radius
-//                                                                       startAngle:degreesToRadians(degrees)
-//                                                                         endAngle:degreesToRadians(degrees)
-//                                                                        clockwise:FALSE] currentPoint]];
-//                    [tick_wheel addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-//                                                                              radius:*radius * 0.975
-//                                                                          startAngle:degreesToRadians(degrees)
-//                                                                            endAngle:degreesToRadians(degrees)
-//                                                                           clockwise:FALSE] currentPoint]];
-//                    [tick_wheel closePath];
-//                }
-//                return [tick_wheel CGPath];
-//            }((int)round(*touch_point_angle), 270));
-//            [(CAShapeLayer *)view.layer setPath:tick_wheel.CGPath];
-            [view setNeedsDisplay];
+            draw_view();
         };
     };
     
     static CaptureDeviceConfigurationControlProperty touch_point_property;
-    static void (^control_renderer)(void);
+    static void (^control_renderer)(dispatch_block_t);
     control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property);
     
     
@@ -148,15 +103,15 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
             return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
         }();
         
-        control_renderer();
+        control_renderer(^{ [view setNeedsDisplay]; });
         
         if (touch_glb.phase == UITouchPhaseEnded) {
             [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) sendActionsForControlEvents:UIControlEventTouchUpInside];
             CaptureDeviceConfigurationControlProperty next_property = (CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected).tag + 1) % 4;
             if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
-                (control_renderer = tick_wheel_renderer_init(&touch_point_angle, &radius, &touch_point_property))();
+                (control_renderer = tick_wheel_renderer_init(&touch_point_angle, &radius, &touch_point_property))(^{ [view setNeedsDisplay]; });
             } else {
-                (control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property))();
+                (control_renderer = button_arc_renderer_init(&touch_point_angle, &radius, &touch_point_property))(^{ [view setNeedsDisplay]; });
                 [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setSelected:FALSE];
             }
         }
@@ -168,7 +123,7 @@ static const void (^(^handle_touch_event_init)(__kindof __weak UIView *))(UITouc
     UIBezierPath * path[2] = {[UIBezierPath bezierPath], [UIBezierPath bezierPath]};
     int degrees[2] = {180, (int)round(touch_point_angle)};
     int end[2] = {(int)round(touch_point_angle), 270};
-    UIColor * color[2] = {[UIColor redColor], [UIColor blueColor]};
+    UIColor * color[2] = {[UIColor colorWithRed:255/255 green:252/255 blue:121/255 alpha:1.0], [UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0]};
     for (int i = 0; i < 2; i++) {
         for (; degrees[i] < end[i]; degrees[i]++) {
             [path[i] moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
@@ -234,9 +189,6 @@ static const void (^handle_touch_event)(UITouch * _Nullable);
                 [self setUserInteractionEnabled:TRUE];
             }];
         };
-        
-        
-        
     }
     
     return self;
