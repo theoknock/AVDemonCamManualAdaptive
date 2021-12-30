@@ -20,11 +20,12 @@ static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 
 // Rx-block global properties
 
-//static double * _Nonnull const * _Nonnull touch_point_ptr; // static double touch_point[2];
-static double * _Nonnull const * _Nonnull touch_angle_ptr;
-static double * _Nonnull const * _Nonnull touch_property_ptr;
+static CGPoint * _Nonnull const * _Nonnull touch_point_ptr_ref;
+static CGFloat * _Nonnull const * _Nonnull touch_angle_ptr_ref;
+static CaptureDeviceConfigurationControlProperty * _Nonnull const * _Nonnull touch_property_ptr_ref;
 
-static double * _Nonnull const * _Nonnull center_ptr; // static double center[2];
+static CGPoint * _Nonnull const * _Nonnull center_point_ptr_ref;
+
 static double * _Nonnull const * _Nonnull radius_ptr;
 
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
