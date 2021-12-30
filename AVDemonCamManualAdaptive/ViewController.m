@@ -34,250 +34,270 @@ static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConf
     
     return button_angle;
 };
-static double (^CaptureDeviceConfigurationPropertyValueAngle)(double[3]) = ^ double (double capture_device_configuration_property_value_angle_arguments[3]) {
-    double rescaled_angle = rescale(capture_device_configuration_property_value_angle_arguments[0], capture_device_configuration_property_value_angle_arguments[1], capture_device_configuration_property_value_angle_arguments[2], CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor));
-    rescaled_angle = fmax(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fmin(rescaled_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
-    
-    return rescaled_angle;
-};
+//static double (^CaptureDeviceConfigurationPropertyValueAngle)(double[3]) = ^ double (double capture_device_configuration_property_value_angle_arguments[3]) {
+//    double rescaled_angle = rescale(capture_device_configuration_property_value_angle_arguments[0], capture_device_configuration_property_value_angle_arguments[1], capture_device_configuration_property_value_angle_arguments[2], CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor));
+//    rescaled_angle = fmax(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fmin(rescaled_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
+//    
+//    return rescaled_angle;
+//};
 
-extern void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
-    CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
-    center_point_ptr_ref = ^ CGPoint * _Nonnull const * _Nonnull (void) {
-        CGPoint center_point = CGPointMake(CGRectGetMaxX(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
-        static CGPoint * center_point_ptr;
-        center_point_ptr = &center_point;
-        return &center_point_ptr;
-    }();
-    
     return ^ (UITouch * _Nonnull touch) {
-        touch_ptr_ref = &touch;
-
+        touch_ptr_ref = touch;
         return ^{
             touch_point_ptr_ref = ^ CGPoint * _Nonnull const * _Nonnull (void) {
-                CGPoint touch_point = [*touch_ptr_ref preciseLocationInView:(*touch_ptr_ref).view];
+                CGPoint touch_point = [touch preciseLocationInView:(touch).view];
                 static CGPoint * touch_point_ptr;
                 touch_point_ptr = &touch_point;
                 return &touch_point_ptr;
             }();
+            NSLog(@"touch_point = %@", NSStringFromCGPoint(**touch_point_ptr_ref));
+            
+            center_point_ptr_ref = ^ CGPoint * _Nonnull const * _Nonnull (void) {
+                CGPoint center_point = CGPointMake(CGRectGetMaxX(touch.view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(touch.view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
+                static CGPoint * center_point_ptr;
+                center_point_ptr = &center_point;
+                return &center_point_ptr;
+            }();
+            NSLog(@"center = %@", NSStringFromCGPoint(**center_point_ptr_ref));
+        
             
             touch_angle_ptr_ref = ^ CGFloat * _Nonnull const * _Nonnull (void) {
                 double radian  = atan2((**touch_point_ptr_ref).y - (**center_point_ptr_ref).y,
                                        (**touch_point_ptr_ref).x - (**center_point_ptr_ref).x);
                 CGFloat touch_angle = radian * (180.0 / M_PI);
                 if (touch_angle < 0.0) touch_angle += 360.0;
-                touch_angle = fmaxf(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fminf(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
+//                touch_angle = fmaxf(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fminf(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
                 static CGFloat * touch_angle_ptr;
                 touch_angle_ptr = &touch_angle;
                 return &touch_angle_ptr;
             }();
+            NSLog(@"touch_angle = %f", **touch_angle_ptr_ref);
             
-            touch_property_ptr_ref = ^ CaptureDeviceConfigurationControlProperty * _Nonnull const * _Nonnull (void) {
+            
+            touch_property_ptr_ref = ^ CaptureDeviceConfigurationControlProperty * (void) {
                 CaptureDeviceConfigurationControlProperty touch_property = (CaptureDeviceConfigurationControlProperty)round(rescale(**touch_angle_ptr_ref, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
                 static CaptureDeviceConfigurationControlProperty * touch_property_ptr;
                 touch_property_ptr = &touch_property;
-                return &touch_property_ptr;
+                return touch_property_ptr;
             }();
+            NSLog(@"touch_property = %lu", *touch_property_ptr_ref);
             
-            control_renderer_state_ptr_ref = ^ ControlRendererState * _Nonnull const * _Nonnull (void) {
-                ControlRendererState state = ControlRendererStatePropertyTransition;
-                state = (ControlRendererStatePropertyTransition << state) & ControlRendererStateValue;
-                static ControlRendererState * state_ptr;
-                state_ptr = &state;
-                return &state_ptr;
-            }();
-            
-        };
-    };
-    
-    
-    
-    
-    
-    static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
-        while (y != 0)
-        {
-            int borrow = (~x) & y;
-            x = x ^ y;
-            y = borrow << 1;
-    }
-    
-    return x;
-};
-
-
-
-
-// instead of blocks that return double, rewrite to take a pointer to a double that is updated
-// A given double is updated by only one block, even if its value is used by other blocks
-// A block reference that executes that one block can be used by other blocks to update its value
-// No pointer to a double sits any higher in the block chain than the first block to use it
-
-
-
-
-
-static CaptureDeviceConfigurationControlProperty (^touch_point_property)(void) = ^ CaptureDeviceConfigurationControlProperty (void) {
-    CaptureDeviceConfigurationControlProperty property = (CaptureDeviceConfigurationControlProperty)round(rescale(touch_point_angle(), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
-    
-    return property;
-};
-
-static void (^(^ControlRenderer[2])(__kindof __weak UIView *))(AVCaptureDevice *, dispatch_block_t) = { ^ (__kindof __weak UIView * view) {
-        return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
-            for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
-                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:radius startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) clockwise:FALSE]
-                                                                               currentPoint]];
-                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == (CaptureDeviceConfigurationControlProperty)[CaptureDeviceConfigurationPropertyButton(touch_point_property()) tag])];
-            }
-            draw_view();
-        };
-},
-    ^ (__kindof __weak UIView * view) {
-        return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
-//                CaptureDeviceConfigurationControlProperty selected_property = (CaptureDeviceConfigurationControlProperty)[CaptureDeviceConfigurationPropertyButton(touch_point_property()) tag];
-                double property_value_radians = degreesToRadians(touch_point_angle()); /*CaptureDeviceConfigurationPropertyValueAngle((selected_property == CaptureDeviceConfigurationControlPropertyTorchLevel)
-                                                                                                              ? (double[3]){[capture_device torchLevel], 0.0, 1.0}
-                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyLensPosition)
-                                                                                                              ? (double[3]){[capture_device lensPosition], 0.0, 1.0}
-                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyExposureDuration)
-                                                                                                              ? (double[3]){CMTimeGetSeconds([capture_device exposureDuration]), CMTimeGetSeconds(capture_device.activeFormat.minExposureDuration), 1.0/3.0}
-                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyISO)
-                                                                                                              ? (double[3]){capture_device.ISO, capture_device.activeFormat.minISO, capture_device.activeFormat.maxISO}
-                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyZoomFactor)
-                                                                                                              ? (double[3]){capture_device.videoZoomFactor, capture_device.minAvailableVideoZoomFactor, capture_device.maxAvailableVideoZoomFactor}
-                                                                                                              : (double[3]){CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)}));*/
+            state = ^ ControlRendererState {
+                ControlRendererState renderer_state = 2; state++;
+                ((state++) % 4);
                 
-                [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:radius startAngle:property_value_radians endAngle:property_value_radians clockwise:FALSE]
-                                                                                                                        currentPoint]];
-                draw_view();
-            };
-    }
-};
-
-extern void const * (^render_control_ptr)(dispatch_block_t _Nullable);
-static void (^render_control)(dispatch_block_t _Nullable);
-
-void (^(^touch_event_handler)(void))(UITouch * _Nullable) = ^ (void) {
-    return ^ (UITouch * _Nullable touch) {
-        static CGPoint touch_point;
-        static UITouchPhase touch_phase;
-        (touch != nil)
-        ? ^{
-            touch_ptr = touch;
-        }()
-        : ^{
+                return renderer_state;
+            }();
+            NSLog(@"state = %lu", state);
             
-        }();
-        touch_point = [touch_ptr preciseLocationInView:touch_ptr.view];
-        touch_phase = [touch_ptr phase];
-        
-        radius = ^ CGFloat (void) {
-            CGFloat x_radius     = touch_point.x - center.x;
-            CGFloat y_radius     = touch_point.y - center.y;
-            CGFloat r            = sqrt(pow(x_radius, 2.0) +
-                                        pow(y_radius, 2.0));
-            return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
-        }();
-        
-        render_control(capture_device, ^{ [control_view setNeedsDisplay]; });
-        
-        if (touch_ptr.phase == UITouchPhaseEnded) {
-//            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:touch_point];
-//            [CaptureDeviceConfigurationPropertyButton(touch_point_property()) sendActionsForControlEvents:UIControlEventTouchUpInside];
-//            CaptureDeviceConfigurationControlProperty next_property = (touch_point_property() + 1) % 4;
-//            if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
-//                (render_control = ControlRenderer[0](view))(capture_device, ^{ [view setNeedsDisplay]; });
-//            } else {
-//                render_control = ControlRenderer[1](view);
-//            }
-        }
+            
+            
+            radius_ptr_ref = ^ double * _Nonnull const * _Nonnull (void) {
+                CGFloat x_radius     = (**touch_point_ptr_ref).x - (**center_point_ptr_ref).x;
+                CGFloat y_radius     = (**touch_point_ptr_ref).y - (**center_point_ptr_ref).y;
+                CGFloat r            = sqrt(pow(x_radius, 2.0) +
+                                            pow(y_radius, 2.0));
+                CGFloat radius = fmaxf(fminf((**center_point_ptr_ref).x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(touch_ptr_ref.view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+                static CGFloat * radius_ptr;
+                radius_ptr = &radius;
+                return &radius_ptr;
+            }();
+            
+            for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
+                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:**center_point_ptr_ref radius:**radius_ptr_ref startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) clockwise:FALSE]
+                                                                               currentPoint]];
+                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == (CaptureDeviceConfigurationControlProperty)[CaptureDeviceConfigurationPropertyButton(property) tag])];
+            }
+        };
     };
 };
-static void (^handle_touch_event)(UITouch * _Nullable);
-
-
-// Why do this? In a method in which block is executed, there may be a property that is only available from within that method, but which is used by other blocks in the chain.
-// Take touchesBegan and UITouch, for example, where block is the event handler executed in that method; in that case, block_init could be passed the UITouch object,
+    
+    
+    
+    
+//    static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
+//        while (y != 0)
+//        {
+//            int borrow = (~x) & y;
+//            x = x ^ y;
+//            y = borrow << 1;
+//    }
 //
-static int (^block)(int *); // block
-//static int (^(^)(int *))(int *); // global to block
-//static int (^(^(^)(int *))(int *))(int *); // global to block
-static int (^(^(^(^block_init)(void))(int *))(int *))(int *) = ^ { // init
-        return (^ (int * _Nonnull const * _Nonnull a) {
-            return (^ (int * b) {
-                return (^ int (int * c) {
-                    return *********a + *b + *c;
-                });
-            });
-        });
-};
+//    return x;
+//};
+//
+//
+//
+//
+//// instead of blocks that return double, rewrite to take a pointer to a double that is updated
+//// A given double is updated by only one block, even if its value is used by other blocks
+//// A block reference that executes that one block can be used by other blocks to update its value
+//// No pointer to a double sits any higher in the block chain than the first block to use it
+//
+//
+//
+//
+//
+//static CaptureDeviceConfigurationControlProperty (^touch_point_property)(void) = ^ CaptureDeviceConfigurationControlProperty (void) {
+//    CaptureDeviceConfigurationControlProperty property = (CaptureDeviceConfigurationControlProperty)round(rescale(touch_point_angle(), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
+//
+//    return property;
+//};
+//
+//static void (^(^ControlRenderer[2])(__kindof __weak UIView *))(AVCaptureDevice *, dispatch_block_t) = { ^ (__kindof __weak UIView * view) {
+//        return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
+//            for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
+//                [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:radius startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) clockwise:FALSE]
+//                                                                               currentPoint]];
+//                [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == (CaptureDeviceConfigurationControlProperty)[CaptureDeviceConfigurationPropertyButton(touch_point_property()) tag])];
+//            }
+//            draw_view();
+//        };
+//},
+//    ^ (__kindof __weak UIView * view) {
+//        return ^ (AVCaptureDevice * capture_device, dispatch_block_t draw_view) {
+////                CaptureDeviceConfigurationControlProperty selected_property = (CaptureDeviceConfigurationControlProperty)[CaptureDeviceConfigurationPropertyButton(touch_point_property()) tag];
+//                double property_value_radians = degreesToRadians(touch_point_angle()); /*CaptureDeviceConfigurationPropertyValueAngle((selected_property == CaptureDeviceConfigurationControlPropertyTorchLevel)
+//                                                                                                              ? (double[3]){[capture_device torchLevel], 0.0, 1.0}
+//                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyLensPosition)
+//                                                                                                              ? (double[3]){[capture_device lensPosition], 0.0, 1.0}
+//                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyExposureDuration)
+//                                                                                                              ? (double[3]){CMTimeGetSeconds([capture_device exposureDuration]), CMTimeGetSeconds(capture_device.activeFormat.minExposureDuration), 1.0/3.0}
+//                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyISO)
+//                                                                                                              ? (double[3]){capture_device.ISO, capture_device.activeFormat.minISO, capture_device.activeFormat.maxISO}
+//                                                                                                              : (selected_property == CaptureDeviceConfigurationControlPropertyZoomFactor)
+//                                                                                                              ? (double[3]){capture_device.videoZoomFactor, capture_device.minAvailableVideoZoomFactor, capture_device.maxAvailableVideoZoomFactor}
+//                                                                                                              : (double[3]){CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)}));*/
+//
+//                [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:[[UIBezierPath bezierPathWithArcCenter:center radius:radius startAngle:property_value_radians endAngle:property_value_radians clockwise:FALSE]
+//                                                                                                                        currentPoint]];
+//                draw_view();
+//            };
+//    }
+//};
+//
+//extern void const * (^render_control_ptr)(dispatch_block_t _Nullable);
+//static void (^render_control)(dispatch_block_t _Nullable);
+//
+//void (^(^touch_event_handler)(void))(UITouch * _Nullable) = ^ (void) {
+//    return ^ (UITouch * _Nullable touch_ptr_ref) {
+//        static CGPoint touch_point;
+//        static UITouchPhase touch_phase;
+//        (touch_ptr_ref != nil)
+//        ? ^{
+//            touch_ptr = touch_ptr_ref;
+//        }()
+//        : ^{
+//
+//        }();
+//        touch_point = [touch_ptr preciseLocationInView:touch_ptr.view];
+//        touch_phase = [touch_ptr phase];
+//
+//        radius = ^ CGFloat (void) {
+//            CGFloat x_radius     = touch_point.x - center.x;
+//            CGFloat y_radius     = touch_point.y - center.y;
+//            CGFloat r            = sqrt(pow(x_radius, 2.0) +
+//                                        pow(y_radius, 2.0));
+//            return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+//        }();
+//
+//        render_control(capture_device, ^{ [control_view setNeedsDisplay]; });
+//
+//        if (touch_ptr.phase == UITouchPhaseEnded) {
+////            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:touch_point];
+////            [CaptureDeviceConfigurationPropertyButton(touch_point_property()) sendActionsForControlEvents:UIControlEventTouchUpInside];
+////            CaptureDeviceConfigurationControlProperty next_property = (touch_point_property() + 1) % 4;
+////            if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
+////                (render_control = ControlRenderer[0](view))(capture_device, ^{ [view setNeedsDisplay]; });
+////            } else {
+////                render_control = ControlRenderer[1](view);
+////            }
+//        }
+//    };
+//};
+//static void (^handle_touch_event)(UITouch * _Nullable);
+//
+//
+//// Why do this? In a method in which block is executed, there may be a property that is only available from within that method, but which is used by other blocks in the chain.
+//// Take touchesBegan and UITouch, for example, where block is the event handler executed in that method; in that case, block_init could be passed the UITouch object,
+////
+//static int (^block)(int *); // block
+////static int (^(^)(int *))(int *); // global to block
+////static int (^(^(^)(int *))(int *))(int *); // global to block
+//static int (^(^(^(^block_init)(void))(int *))(int *))(int *) = ^ { // init
+//        return (^ (int * _Nonnull const * _Nonnull a) {
+//            return (^ (int * b) {
+//                return (^ int (int * c) {
+//                    return *********a + *b + *c;
+//                });
+//            });
+//        });
+//};
+//
+//static int a_int = 1;
+//static int * a_ptr;
+//static int b_int = 2;
+//static const int * b_ptr = &b_int;
+//static int c_int = 3;
+//static const int * c_ptr = &c_int;
+//
+//
+//- (void)test {
+//    a_ptr = &a_int;
+//    block = block_init()(&a_ptr)(b_ptr);
+//    NSLog(@"First result  == %d", block(c_ptr));
+//    a_int = 2;
+//    NSLog(@"Second result == %d", block(c_ptr));
+//}
 
-static int a_int = 1;
-static int * a_ptr;
-static int b_int = 2;
-static const int * b_ptr = &b_int;
-static int c_int = 3;
-static const int * c_ptr = &c_int;
-
-
-- (void)test {
-    a_ptr = &a_int;
-    block = block_init()(&a_ptr)(b_ptr);
-    NSLog(@"First result  == %d", block(c_ptr));
-    a_int = 2;
-    NSLog(@"Second result == %d", block(c_ptr));
-}
-
-- (void)drawRect:(CGRect)rect
-{
-    // TO-DO: Create a block initializer that return a block containing the following code, and execute it here
-    //        Integrate it as part of an Rx-style block structure
-    UIBezierPath * path[2] = {[UIBezierPath bezierPath], [UIBezierPath bezierPath]};
-    int degrees[2] = {180, (int)touch_point_angle()};
-    int end[2] = {(int)touch_point_angle(), 270};
-    UIColor * color[2] = {[UIColor colorWithRed:255/255 green:252/255 blue:121/255 alpha:1.0], [UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0]};
-    for (int i = 0; i < 2; i++) {
-        for (; degrees[i] < end[i]; degrees[i]++) {
-            [path[i] moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                 radius:radius
-                                                             startAngle:degreesToRadians(degrees[i])
-                                                               endAngle:degreesToRadians(degrees[i])
-                                                              clockwise:FALSE] currentPoint]];
-            [path[i] addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-                                                                    radius:radius * 0.975
-                                                                startAngle:degreesToRadians(degrees[i])
-                                                                  endAngle:degreesToRadians(degrees[i])
-                                                                 clockwise:FALSE] currentPoint]];
-            [path[i] closePath];
-        }
-        [color[i] setStroke];
-        [path[i] stroke];
-    }
-}
+//- (void)drawRect:(CGRect)rect
+//{
+//    // TO-DO: Create a block initializer that return a block containing the following code, and execute it here
+//    //        Integrate it as part of an Rx-style block structure
+////    UIBezierPath * path[2] = {[UIBezierPath bezierPath], [UIBezierPath bezierPath]};
+////    int degrees[2] = {180, (int)touch_point_angle()};
+////    int end[2] = {(int)touch_point_angle(), 270};
+////    UIColor * color[2] = {[UIColor colorWithRed:255/255 green:252/255 blue:121/255 alpha:1.0], [UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0]};
+////    for (int i = 0; i < 2; i++) {
+////        for (; degrees[i] < end[i]; degrees[i]++) {
+////            [path[i] moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+////                                                                 radius:radius
+////                                                             startAngle:degreesToRadians(degrees[i])
+////                                                               endAngle:degreesToRadians(degrees[i])
+////                                                              clockwise:FALSE] currentPoint]];
+////            [path[i] addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
+////                                                                    radius:radius * 0.975
+////                                                                startAngle:degreesToRadians(degrees[i])
+////                                                                  endAngle:degreesToRadians(degrees[i])
+////                                                                 clockwise:FALSE] currentPoint]];
+////            [path[i] closePath];
+////        }
+////        [color[i] setStroke];
+////        [path[i] stroke];
+////    }
+//}
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    handle_touch_event(touches.anyObject);
+    (handle_touch = (touch_handler = touch_handler_init())(touches.anyObject))();
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    handle_touch_event(touches.anyObject);
+    handle_touch();
 }
-    /Users/xcodedeveloper/Library/Mobile Documents/com~apple~CloudDocs/Active Xcode Projects (iCloud) ƒ/AVDemonCamManualAdaptive/AVDemonCamManualAdaptive
+
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    handle_touch_event(touches.anyObject);
+    handle_touch();
 }
 
 + (Class)layerClass {
     return [CAShapeLayer class];
 }
 
-extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
+//extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self == [super initWithFrame:frame]) {
-        [self test];
         {
             [self setTranslatesAutoresizingMaskIntoConstraints:FALSE];
             [self setBackgroundColor:[UIColor clearColor]];
@@ -285,52 +305,52 @@ extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfi
         };
         
         [self setUserInteractionEnabled:FALSE];
-        {
+//        {
             CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
-            center = CGPointMake(CGRectGetMaxX(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
-            radius = CGRectGetMidX(self.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds);
-            
-            UIBezierPath * button_animation_path = [UIBezierPath bezierPath];
-            [button_animation_path addArcWithCenter:center
-                                             radius:radius
-                                         startAngle:degreesToRadians(0.0)
-                                           endAngle:degreesToRadians(360.0)
-                                          clockwise:FALSE];
-            [(CAShapeLayer *)self.layer setStrokeColor:[[UIColor whiteColor] CGColor]];
-            [(CAShapeLayer *)self.layer setFillColor:[[UIColor clearColor] CGColor]];
-            [(CAShapeLayer *)self.layer setLineWidth:1.0];
-            [(CAShapeLayer *)self.layer setLineCap:kCALineCapRound];
-            [(CAShapeLayer *)self.layer setBorderColor:[UIColor redColor].CGColor];
-            [(CAShapeLayer *)self.layer setBorderWidth:0.5];
-            [(CAShapeLayer *)self.layer setPath:button_animation_path.CGPath];
-            
-            CAKeyframeAnimation *animation2 = [CAKeyframeAnimation animationWithKeyPath:@"strokeStart"];
-            animation2.timingFunction = [CAMediaTimingFunction functionWithName:@"easeInEaseOut"];
-            animation2.beginTime = k_whole_round_time * 0.25;
-            animation2.duration = k_whole_round_time;
-            animation2.values = @[@0,@0.999];
-            animation2.fillMode = kCAFillModeForwards;
-            animation2.removedOnCompletion = NO;
-            
-            CAAnimationGroup *group = [[CAAnimationGroup alloc] init];
-            group.duration = animation2.duration;
-            group.removedOnCompletion = NO;
-            group.fillMode = kCAFillModeForwards;
-            group.repeatCount = MAXFLOAT;
-            group.animations = @[animation2];
-            
-//            [(CAShapeLayer *)self.layer addAnimation:group forKey:@"groupAnimation"];
-            
-            CABasicAnimation *rotateAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
-                rotateAnimation.toValue = @(M_PI * 2);
-                rotateAnimation.duration = k_whole_round_time;
-                rotateAnimation.repeatCount = MAXFLOAT;
+            CGPoint center = CGPointMake(CGRectGetMaxX(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(self.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
+            CGFloat radius = CGRectGetMidX(self.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds);
 
-            [(CAShapeLayer *)self.layer setAnchorPoint:CGPointMake(1.0, 1.0)];
-//            [(CAShapeLayer *)self.layer setPosition:center];
-//                [(CAShapeLayer *)self.layer addAnimation:rotateAnimation forKey:@"rotate"];
-            
-            
+//            UIBezierPath * button_animation_path = [UIBezierPath bezierPath];
+//            [button_animation_path addArcWithCenter:center
+//                                             radius:radius
+//                                         startAngle:degreesToRadians(0.0)
+//                                           endAngle:degreesToRadians(360.0)
+//                                          clockwise:FALSE];
+//            [(CAShapeLayer *)self.layer setStrokeColor:[[UIColor whiteColor] CGColor]];
+//            [(CAShapeLayer *)self.layer setFillColor:[[UIColor clearColor] CGColor]];
+//            [(CAShapeLayer *)self.layer setLineWidth:1.0];
+//            [(CAShapeLayer *)self.layer setLineCap:kCALineCapRound];
+//            [(CAShapeLayer *)self.layer setBorderColor:[UIColor redColor].CGColor];
+//            [(CAShapeLayer *)self.layer setBorderWidth:0.5];
+//            [(CAShapeLayer *)self.layer setPath:button_animation_path.CGPath];
+//
+//            CAKeyframeAnimation *animation2 = [CAKeyframeAnimation animationWithKeyPath:@"strokeStart"];
+//            animation2.timingFunction = [CAMediaTimingFunction functionWithName:@"easeInEaseOut"];
+//            animation2.beginTime = k_whole_round_time * 0.25;
+//            animation2.duration = k_whole_round_time;
+//            animation2.values = @[@0,@0.999];
+//            animation2.fillMode = kCAFillModeForwards;
+//            animation2.removedOnCompletion = NO;
+//
+//            CAAnimationGroup *group = [[CAAnimationGroup alloc] init];
+//            group.duration = animation2.duration;
+//            group.removedOnCompletion = NO;
+//            group.fillMode = kCAFillModeForwards;
+//            group.repeatCount = MAXFLOAT;
+//            group.animations = @[animation2];
+//
+////            [(CAShapeLayer *)self.layer addAnimation:group forKey:@"groupAnimation"];
+//
+//            CABasicAnimation *rotateAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+//                rotateAnimation.toValue = @(M_PI * 2);
+//                rotateAnimation.duration = k_whole_round_time;
+//                rotateAnimation.repeatCount = MAXFLOAT;
+//
+//            [(CAShapeLayer *)self.layer setAnchorPoint:CGPointMake(1.0, 1.0)];
+////            [(CAShapeLayer *)self.layer setPosition:center];
+////                [(CAShapeLayer *)self.layer addAnimation:rotateAnimation forKey:@"rotate"];
+//
+//
             [UIView animateWithDuration:2.0 delay:0.0 usingSpringWithDamping:1.0 initialSpringVelocity:1.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
                 for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                     [self addSubview:CaptureDeviceConfigurationPropertyButton(property)];
@@ -343,10 +363,10 @@ extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfi
             } completion:^(BOOL finished) {
                 [self setNeedsDisplay];
             }];
-        }
+//        }
         [self setUserInteractionEnabled:TRUE];
-        render_control = ControlRenderer[0](self);
-        handle_touch_event = touch_event_handler();
+//        render_control = ControlRenderer[0](self);
+//        handle_touch_event = touch_event_handler();
     }
     
     return self;
@@ -376,28 +396,27 @@ extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfi
     CGSize                       videoDimensions;
 }
 
-@property (nonatomic, strong) CameraView * view;
+//@property (nonatomic, strong) CameraView * view;
 
 @end
 
 @implementation ViewController
 
-extern AVCaptureDevice * _Nonnull const * _Nonnull capture_device;
-extern __kindof UIView * _Nonnull const * _Nonnull control_view;
+//extern AVCaptureDevice * _Nonnull const * _Nonnull capture_device;
+//extern __kindof UIView * _Nonnull const * _Nonnull control_view;
 
 @dynamic view;
 
 - (void)loadView {
     self.view = (CameraView *)[[CameraView alloc] initWithFrame:UIScreen.mainScreen.bounds];
     [(CameraView *)self.view setContentMode:UIViewContentModeScaleAspectFit];
-    [(CameraView *)self.view addSubview:^ ControlView * (void) {
-        ControlView * cv = [[ControlView alloc] initWithFrame:CGRectMake(CGRectGetMinX(UIScreen.mainScreen.bounds),
-                                                                        CGRectGetMidY(UIScreen.mainScreen.bounds),
-                                                                        CGRectGetWidth(UIScreen.mainScreen.bounds),
-                                                                        CGRectGetWidth(UIScreen.mainScreen.bounds))];
-        control_view = &cv;
-        return cv;
-    }()];
+    
+    control_view = [[ControlView alloc] initWithFrame:CGRectMake(CGRectGetMinX(UIScreen.mainScreen.bounds),
+                                                                    CGRectGetMidY(UIScreen.mainScreen.bounds),
+                                                                    CGRectGetWidth(UIScreen.mainScreen.bounds),
+                                                                    CGRectGetWidth(UIScreen.mainScreen.bounds))];
+    
+    [(CameraView *)self.view addSubview:control_view];
 }
 
 - (void)viewDidLoad {

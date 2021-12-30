@@ -15,17 +15,17 @@ NS_ASSUME_NONNULL_BEGIN
 static AVCaptureDevice * _Nonnull capture_device;
 static __kindof UIView * _Nonnull control_view;
 static CGPoint * _Nonnull const * _Nonnull center_point_ptr_ref;
-static UITouch * _Nonnull const * _Nonnull touch_ptr_ref;
+static UITouch * _Nonnull touch_ptr_ref;
 
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 
 
 static CGPoint * _Nonnull const * _Nonnull touch_point_ptr_ref;
 static CGFloat * _Nonnull const * _Nonnull touch_angle_ptr_ref;
-static CaptureDeviceConfigurationControlProperty * _Nonnull const * _Nonnull touch_property_ptr_ref;
+static CaptureDeviceConfigurationControlProperty * _Nonnull touch_property_ptr_ref;
 
 
-static double * _Nonnull const * _Nonnull radius_ptr;
+static double * _Nonnull const * _Nonnull radius_ptr_ref;
 
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 static double * const button_angle_ptr;
@@ -40,12 +40,13 @@ typedef NS_ENUM(NSUInteger, ControlRendererState) {
     ControlRendererStateValue               // tick wheel behavior and event handling
 };
 
-static ControlRendererState * _Nonnull const * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
+static ControlRendererState state;
+static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
 static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
 static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
 
-static void const * _Nonnull (^(^touch_handler_ptr)(UITouch *))(void); // this goes at the "top" since both the touch event and touch object are integral to every operation thereafter (executed in touchesBegan)
-static void const * _Nonnull (^handle_touch_ptr)(void); // this is the "bottom" block, the one that gets assigned first and over the other possible blocks (reinitialized by preceding block in touchesBegan and executed in touchesBegan/Moved/Ended)
+static void (^(^touch_handler)(UITouch *))(void); // this goes at the "top" since both the touch event and touch object are integral to every operation thereafter (executed in touchesBegan)
+static void (^handle_touch)(void); // this is the "bottom" block, the one that gets assigned first and over the other possible blocks (reinitialized by preceding block in touchesBegan and executed in touchesBegan/Moved/Ended)
 
 
 @interface ControlView: UIView
