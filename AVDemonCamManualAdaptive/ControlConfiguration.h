@@ -94,7 +94,7 @@ static UIImage * (^CaptureDeviceConfigurationControlPropertySymbolImage)(Capture
     return [UIImage systemImageNamed:CaptureDeviceConfigurationControlPropertySymbol(property, state) withConfiguration:CaptureDeviceConfigurationControlPropertySymbolImageConfiguration(state)];
 };
 
-static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
+
 static UIButton * (^CaptureDeviceConfigurationPropertySelectedButton)(void);
 
 static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(void))(CaptureDeviceConfigurationControlProperty) = ^ (void) {

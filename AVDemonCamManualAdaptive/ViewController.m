@@ -8,32 +8,23 @@
 #import "ViewController.h"
 #import "ControlConfiguration.h"
 
+#import <objc/runtime.h>
+
+
 #define k_whole_round_time (2.0)
+
+
+
+
 
 @interface ControlView ()
 
 @end
 
 
-@implementation ControlView
-
-static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
-    while (y != 0)
-    {
-        int borrow = (~x) & y;
-        x = x ^ y;
-        y = borrow << 1;
-    }
-    
-    return x;
-};
-
-static double rescale(double old_value, double old_min, double old_max, double new_min, double new_max) {
-    return (new_max - new_min) * /*(fmax(old_min, fmin(old_value, old_max))*/ (old_value - old_min) / (old_max - old_min) + new_min;
-};
-
-static CGPoint center;
-static double radius;
+@implementation ControlView {
+    CGPoint touch_point;
+}
 
 static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConfigurationControlProperty) = ^ double (CaptureDeviceConfigurationControlProperty property) {
     static double button_angle;
@@ -48,7 +39,73 @@ static double (^CaptureDeviceConfigurationPropertyValueAngle)(double[3]) = ^ dou
     return rescaled_angle;
 };
 
-static UITouch * touch_ptr;
+extern void (^(^touch_handler)(UITouch * _Nonnull))(void);
+static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
+    static UITouch * _Nonnull const * _Nonnull touch_ptr; // always points to the same address to point to any address pointing to a given UITouch object
+    CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
+    static CGPoint * _Nonnull const * _Nonnull center_point_ptr_ref;
+    
+    return ^ (UITouch * _Nonnull touch) {
+        touch_ptr = &touch; // the address (&) to a pointer (*) to touch (UITouch)
+        
+        
+        CGPoint center_point = CGPointMake(CGRectGetMaxX(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
+        static CGPoint * center_point_ptr;
+        center_point_ptr = &center_point;
+        center_point_ptr_ref = &center_point_ptr;        
+        
+        static CGPoint * _Nonnull const * _Nonnull touch_point_ptr_ref;
+        static CGFloat * _Nonnull const * _Nonnull touch_angle_ptr;
+        static CGFloat * _Nonnull const * _Nonnull touch_property_ptr;
+        return ^{
+            CGPoint touch_point = [*touch_ptr preciseLocationInView:(*touch_ptr).view];
+            static CGPoint * touch_point_ptr;
+            touch_point_ptr = &touch_point;
+            touch_point_ptr_ref = &touch_point_ptr;
+            
+             CGFloat touch_angle = ^ CGFloat (void) {
+                double radian  = atan2((**touch_point_ptr_ref).y - (**center_point_ptr_ref).y,
+                                       (**touch_point_ptr_ref).x - (**center_point_ptr_ref).x);
+                double degrees = radian * (180.0 / M_PI);
+                if (degrees < 0.0) degrees += 360.0;
+                degrees = fmaxf(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fminf(degrees, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
+                
+                return degrees;
+            }();
+        };
+    };
+    
+    
+    
+    
+    
+    static const int (^bitwiseSubtract)(int, int) = ^ int (int x, int y) {
+        while (y != 0)
+        {
+            int borrow = (~x) & y;
+            x = x ^ y;
+            y = borrow << 1;
+    }
+    
+    return x;
+};
+
+static double rescale(double old_value, double old_min, double old_max, double new_min, double new_max) {
+    return (new_max - new_min) * /*(fmax(old_min, fmin(old_value, old_max))*/ (old_value - old_min) / (old_max - old_min) + new_min;
+};
+
+
+
+// instead of blocks that return double, rewrite to take a pointer to a double that is updated
+// A given double is updated by only one block, even if its value is used by other blocks
+// A block reference that executes that one block can be used by other blocks to update its value
+// No pointer to a double sits any higher in the block chain than the first block to use it
+
+
+
+extern UITouch * const * touch_ptr;
+static UITouch * touch;
+
 static double (^touch_point_angle)(void) = ^ double (void) {
     CGPoint touch_point = [touch_ptr preciseLocationInView:touch_ptr.view];
     double radian  = atan2(touch_point.y - center.y, touch_point.x - center.x);
@@ -96,10 +153,11 @@ static void (^(^ControlRenderer[2])(__kindof __weak UIView *))(AVCaptureDevice *
             };
     }
 };
-static void (^render_control)(AVCaptureDevice *, dispatch_block_t);
 
+extern void const * (^render_control_ptr)(dispatch_block_t _Nullable);
+static void (^render_control)(dispatch_block_t _Nullable);
 
-void (^(^touch_event_handler)(__kindof __weak UIView *, AVCaptureDevice *))(UITouch * _Nullable) = ^ (__kindof __weak UIView * view, AVCaptureDevice * capture_device) {
+void (^(^touch_event_handler)(void))(UITouch * _Nullable) = ^ (void) {
     return ^ (UITouch * _Nullable touch) {
         static CGPoint touch_point;
         static UITouchPhase touch_phase;
@@ -118,10 +176,10 @@ void (^(^touch_event_handler)(__kindof __weak UIView *, AVCaptureDevice *))(UITo
             CGFloat y_radius     = touch_point.y - center.y;
             CGFloat r            = sqrt(pow(x_radius, 2.0) +
                                         pow(y_radius, 2.0));
-            return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+            return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
         }();
         
-        render_control(capture_device, ^{ [view setNeedsDisplay]; });
+        render_control(capture_device, ^{ [control_view setNeedsDisplay]; });
         
         if (touch_ptr.phase == UITouchPhaseEnded) {
 //            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:touch_point];
@@ -135,8 +193,40 @@ void (^(^touch_event_handler)(__kindof __weak UIView *, AVCaptureDevice *))(UITo
         }
     };
 };
-
 static void (^handle_touch_event)(UITouch * _Nullable);
+
+
+// Why do this? In a method in which block is executed, there may be a property that is only available from within that method, but which is used by other blocks in the chain.
+// Take touchesBegan and UITouch, for example, where block is the event handler executed in that method; in that case, block_init could be passed the UITouch object,
+//
+static int (^block)(int *); // block
+//static int (^(^)(int *))(int *); // global to block
+//static int (^(^(^)(int *))(int *))(int *); // global to block
+static int (^(^(^(^block_init)(void))(int *))(int *))(int *) = ^ { // init
+        return (^ (int * _Nonnull const * _Nonnull a) {
+            return (^ (int * b) {
+                return (^ int (int * c) {
+                    return *********a + *b + *c;
+                });
+            });
+        });
+};
+
+static int a_int = 1;
+static int * a_ptr;
+static int b_int = 2;
+static const int * b_ptr = &b_int;
+static int c_int = 3;
+static const int * c_ptr = &c_int;
+
+
+- (void)test {
+    a_ptr = &a_int;
+    block = block_init()(&a_ptr)(b_ptr);
+    NSLog(@"First result  == %d", block(c_ptr));
+    a_int = 2;
+    NSLog(@"Second result == %d", block(c_ptr));
+}
 
 - (void)drawRect:(CGRect)rect
 {
@@ -172,7 +262,7 @@ static void (^handle_touch_event)(UITouch * _Nullable);
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     handle_touch_event(touches.anyObject);
 }
-
+    /Users/xcodedeveloper/Library/Mobile Documents/com~apple~CloudDocs/Active Xcode Projects (iCloud) ƒ/AVDemonCamManualAdaptive/AVDemonCamManualAdaptive
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     handle_touch_event(touches.anyObject);
 }
@@ -181,8 +271,11 @@ static void (^handle_touch_event)(UITouch * _Nullable);
     return [CAShapeLayer class];
 }
 
+extern UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
+
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self == [super initWithFrame:frame]) {
+        [self test];
         {
             [self setTranslatesAutoresizingMaskIntoConstraints:FALSE];
             [self setBackgroundColor:[UIColor clearColor]];
@@ -251,7 +344,7 @@ static void (^handle_touch_event)(UITouch * _Nullable);
         }
         [self setUserInteractionEnabled:TRUE];
         render_control = ControlRenderer[0](self);
-        handle_touch_event = touch_event_handler(self, self.captureDevice);
+        handle_touch_event = touch_event_handler();
     }
     
     return self;
@@ -281,9 +374,14 @@ static void (^handle_touch_event)(UITouch * _Nullable);
     CGSize                       videoDimensions;
 }
 
+@property (nonatomic, strong) CameraView * view;
+
 @end
 
 @implementation ViewController
+
+extern AVCaptureDevice * _Nonnull const * _Nonnull capture_device;
+extern __kindof UIView * _Nonnull const * _Nonnull control_view;
 
 @dynamic view;
 
@@ -292,9 +390,10 @@ static void (^handle_touch_event)(UITouch * _Nullable);
     [(CameraView *)self.view setContentMode:UIViewContentModeScaleAspectFit];
     [(CameraView *)self.view addSubview:^ ControlView * (void) {
         ControlView * cv = [[ControlView alloc] initWithFrame:CGRectMake(CGRectGetMinX(UIScreen.mainScreen.bounds),
-                                                                         CGRectGetMidY(UIScreen.mainScreen.bounds),
-                                                                         CGRectGetWidth(UIScreen.mainScreen.bounds),
-                                                                         CGRectGetWidth(UIScreen.mainScreen.bounds))];
+                                                                        CGRectGetMidY(UIScreen.mainScreen.bounds),
+                                                                        CGRectGetWidth(UIScreen.mainScreen.bounds),
+                                                                        CGRectGetWidth(UIScreen.mainScreen.bounds))];
+        control_view = &cv;
         return cv;
     }()];
 }
@@ -305,10 +404,10 @@ static void (^handle_touch_event)(UITouch * _Nullable);
     [captureSession = [[AVCaptureSession alloc] init] setSessionPreset:([captureSession canSetSessionPreset:AVCaptureSessionPreset3840x2160]) ? AVCaptureSessionPreset3840x2160 : AVCaptureSessionPreset1920x1080];
     [captureSession beginConfiguration];
     {
-        [captureInput  = [AVCaptureDeviceInput deviceInputWithDevice:[((ControlView *)((CameraView *)self.view).subviews.firstObject).captureDevice = [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInDualCamera mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionBack] self] error:nil] setUnifiedAutoExposureDefaultsEnabled:TRUE];
+        [captureInput  = [AVCaptureDeviceInput deviceInputWithDevice:[capture_device = [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInDualCamera mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionBack] self] error:nil] setUnifiedAutoExposureDefaultsEnabled:TRUE];
         [captureSession addInput:([captureSession canAddInput:captureInput]) ? captureInput : nil];
         
-        videoDimensions = CMVideoFormatDescriptionGetPresentationDimensions(((ControlView *)((CameraView *)self.view).subviews.firstObject).captureDevice.activeFormat.formatDescription, TRUE, FALSE);
+        videoDimensions = CMVideoFormatDescriptionGetPresentationDimensions(capture_device.activeFormat.formatDescription, TRUE, FALSE);
         //        CGFloat video_maxY   = videoDimensions.height;
         //        CGFloat height_scale = (CGRectGetHeight(UIScreen.mainScreen.bounds) / videoDimensions.height); // the screen height is this many times smaller than the video height
         
