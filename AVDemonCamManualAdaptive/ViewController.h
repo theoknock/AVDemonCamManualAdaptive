@@ -19,12 +19,18 @@ static UITouch * _Nonnull touch_ptr_ref;
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^handle_touch)(void);
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
-typedef NS_ENUM(NSUInteger, ControlRendererState) {
-    ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
-    ControlRendererStateProperty,           // button arc behavior and event handling
-    ControlRendererStateValueTransition,    // tick wheel setup (after touchesEnded on button arc)
-    ControlRendererStateValue               // tick wheel behavior and event handling
+typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
+    ControlRendererStatePropertyTransition = 1 << 0,
+    ControlRendererStateProperty = 1 << 1,
+    ControlRendererStateValueTransition = 1 << 2,
+    ControlRendererStateValue = 1 << 3
 };
+//typedef NS_ENUM(NSUInteger, ControlRendererState) {
+//    ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
+//    ControlRendererStateProperty,           // button arc behavior and event handling
+//    ControlRendererStateValueTransition,    // tick wheel setup (after touchesEnded on button arc)
+//    ControlRendererStateValue               // tick wheel behavior and event handling
+//};
 
 static ControlRendererState state;
 static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1

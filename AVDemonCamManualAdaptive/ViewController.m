@@ -45,6 +45,11 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
     return ^ (UITouch * _Nonnull touch) {
         touch_ptr_ref = touch;
         return ^{
+            if (touch.phase == UITouchPhaseBegan && state == ControlRendererStateProperty | ControlRendererStateValue)  {
+                state++;
+                state = state % 4;
+                NSLog(@"state at UITouchPhaseBegan= %lu", state);
+            };
             static CGPoint touch_point;
             touch_point = [touch preciseLocationInView:(touch).view];
         
@@ -60,18 +65,17 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             static CaptureDeviceConfigurationControlProperty touch_property;
             touch_property = (CaptureDeviceConfigurationControlProperty)round(rescale(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
             
-            if (touch.phase == UITouchPhaseEnded) {
-                state++;
-                state = state % 4;
-                NSLog(@"state = %lu", state);
-            };
-            
-            
             CGFloat x_radius     = (touch_point).x - (center_point).x;
             CGFloat y_radius     = (touch_point).y - (center_point).y;
             CGFloat r            = sqrt(pow(x_radius, 2.0) + pow(y_radius, 2.0));
             static CGFloat radius;
             radius = fmaxf(fminf((center_point).x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+            
+            if (touch.phase == UITouchPhaseEnded && state == ControlRendererStatePropertyTransition | ControlRendererStateValueTransition)  {
+                state++;
+                state = state % 4;
+                NSLog(@"state at UITouchPhaseEnded = %lu", state);
+            };
             
             for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                 static CGFloat angle;
@@ -80,10 +84,14 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
                                                                                currentPoint]];
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == touch_property)];
             }
+            
+            static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
+            static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
+            static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
+
         };
     };
 };
-
 
 
 
