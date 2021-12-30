@@ -14,17 +14,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 static AVCaptureDevice * _Nonnull capture_device;
 static __kindof UIView * _Nonnull control_view;
+static CGPoint * _Nonnull const * _Nonnull center_point_ptr_ref;
+static UITouch * _Nonnull const * _Nonnull touch_ptr_ref;
 
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 
-
-// Rx-block global properties
 
 static CGPoint * _Nonnull const * _Nonnull touch_point_ptr_ref;
 static CGFloat * _Nonnull const * _Nonnull touch_angle_ptr_ref;
 static CaptureDeviceConfigurationControlProperty * _Nonnull const * _Nonnull touch_property_ptr_ref;
 
-static CGPoint * _Nonnull const * _Nonnull center_point_ptr_ref;
 
 static double * _Nonnull const * _Nonnull radius_ptr;
 
@@ -41,7 +40,7 @@ typedef NS_ENUM(NSUInteger, ControlRendererState) {
     ControlRendererStateValue               // tick wheel behavior and event handling
 };
 
-static ControlRendererState * _Nonnull const * _Nonnull control_renderer_state; // control_renderer_state & 1
+static ControlRendererState * _Nonnull const * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
 static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
 static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
 

@@ -43,8 +43,6 @@ static double (^CaptureDeviceConfigurationPropertyValueAngle)(double[3]) = ^ dou
 
 extern void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
-    static UITouch * _Nonnull const * _Nonnull touch_ptr; // always points to the same address to point to any address pointing to a given UITouch object
-    
     CaptureDeviceConfigurationPropertyButton = CaptureDeviceConfigurationPropertyButtons();
     center_point_ptr_ref = ^ CGPoint * _Nonnull const * _Nonnull (void) {
         CGPoint center_point = CGPointMake(CGRectGetMaxX(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).center.x, CGRectGetMaxY(control_view.bounds) - CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyZoomFactor).center.y);
@@ -54,11 +52,11 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
     }();
     
     return ^ (UITouch * _Nonnull touch) {
-        touch_ptr = &touch; // the address (&) to a pointer (*) to touch (UITouch)
+        touch_ptr_ref = &touch;
 
         return ^{
             touch_point_ptr_ref = ^ CGPoint * _Nonnull const * _Nonnull (void) {
-                CGPoint touch_point = [*touch_ptr preciseLocationInView:(*touch_ptr).view];
+                CGPoint touch_point = [*touch_ptr_ref preciseLocationInView:(*touch_ptr_ref).view];
                 static CGPoint * touch_point_ptr;
                 touch_point_ptr = &touch_point;
                 return &touch_point_ptr;
@@ -73,7 +71,6 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
                 static CGFloat * touch_angle_ptr;
                 touch_angle_ptr = &touch_angle;
                 return &touch_angle_ptr;
-                
             }();
             
             touch_property_ptr_ref = ^ CaptureDeviceConfigurationControlProperty * _Nonnull const * _Nonnull (void) {
@@ -82,6 +79,15 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^{
                 touch_property_ptr = &touch_property;
                 return &touch_property_ptr;
             }();
+            
+            control_renderer_state_ptr_ref = ^ ControlRendererState * _Nonnull const * _Nonnull (void) {
+                ControlRendererState state = ControlRendererStatePropertyTransition;
+                state = (ControlRendererStatePropertyTransition << state) & ControlRendererStateValue;
+                static ControlRendererState * state_ptr;
+                state_ptr = &state;
+                return &state_ptr;
+            }();
+            
         };
     };
     
