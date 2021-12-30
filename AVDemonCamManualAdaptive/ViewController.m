@@ -42,7 +42,7 @@ static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConf
 //};
 
 static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (void) {
-    NSLog(@"center = %@", NSStringFromCGPoint(center_point));
+    //    NSLog(@"center = %@", NSStringFromCGPoint(center_point));
     return ^ (UITouch * _Nonnull touch) {
         touch_ptr_ref = touch;
         return ^{
@@ -52,7 +52,7 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             //                touch_point_ptr = &touch_point;
             //                return touch_point_ptr;
             //            }();
-            NSLog(@"\t\ttouch_point = %@", NSStringFromCGPoint(touch_point));
+            //            NSLog(@"\t\ttouch_point = %@", NSStringFromCGPoint(touch_point));
             
             
             
@@ -68,7 +68,7 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             //                touch_angle_ptr = &touch_angle;
             //                return &touch_angle_ptr;
             //            }();
-            NSLog(@"touch_angle = %f", touch_angle);
+            //            NSLog(@"touch_angle = %f", touch_angle);
             
             
             //            touch_property_ptr_ref = ^ CaptureDeviceConfigurationControlProperty * (void) {
@@ -77,16 +77,13 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             //                touch_property_ptr = &touch_property;
             //                return touch_property_ptr;
             //            }();
-            NSLog(@"touch_property = %lu", touch_property);
+            //            NSLog(@"touch_property = %lu", touch_property);
             
-            state = ^ ControlRendererState {
-                ControlRendererState renderer_state = 2; state++;
-                ((state++) % 4);
-                
-                return renderer_state;
-            }();
-            NSLog(@"state = %lu", state);
-            
+            if (touch.phase == UITouchPhaseEnded) {
+                state++;
+                state = state % 4;
+                NSLog(@"state = %lu", state);
+            };
             
             
             //            radius_ptr_ref = ^ double * _Nonnull const * _Nonnull (void) {
@@ -99,7 +96,7 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             //                radius_ptr = &radius;
             //                return &radius_ptr;
             //            }();
-            NSLog(@"radius = %f", radius);
+            //            NSLog(@"radius = %f", radius);
             
             for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                 [CaptureDeviceConfigurationPropertyButton(property) setCenter:[[UIBezierPath bezierPathWithArcCenter:center_point radius:radius startAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) endAngle:degreesToRadians(CaptureDeviceConfigurationPropertyButtonAngle(property)) clockwise:FALSE]
