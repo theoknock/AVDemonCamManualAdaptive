@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 static AVCaptureDevice * _Nonnull capture_device;
 static __kindof UIView * _Nonnull control_view;
 static CGPoint * _Nonnull center_point_ptr_ref;
+static CGPoint center_point;
 static UITouch * _Nonnull touch_ptr_ref;
 
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
