@@ -20,15 +20,21 @@ static CGPoint center_point;
 static int radius_min;
 static int radius_max;
 //
+
+static CGPoint touch_point;
+static CGFloat touch_angle;
+static CaptureDeviceConfigurationControlProperty touch_property;
+static CGFloat radius;
+
 //static UITouch * _Nonnull touch_ptr_ref;
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^handle_touch)(void);
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
-    ControlRendererStatePropertyTransition = 1 << 0,
-    ControlRendererStateProperty = 1 << 1,
-    ControlRendererStateValueTransition = 1 << 2,
-    ControlRendererStateValue = 1 << 3
+    ControlRendererStateProperty = 1 << 0,
+    ControlRendererStateValue= 1 << 1,
+    ControlRendererStatePropertyTransition = 1 << 2,
+    ControlRendererStateValueTransition = 1 << 3
 };
 //typedef NS_ENUM(NSUInteger, ControlRendererState) {
 //    ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
@@ -37,8 +43,10 @@ typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
 //    ControlRendererStateValue               // tick wheel behavior and event handling
 //};
 
-static ControlRendererState state;
-static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
+static ControlRendererState control_renderer_state;
+static void (^(^control_renderer)(void))(void);
+static void (^render_control)(void);
+
 static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
 static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
 
