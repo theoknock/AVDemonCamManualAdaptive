@@ -135,6 +135,7 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             touch_property = (CaptureDeviceConfigurationControlProperty)round(rescale(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
             printf("touch_property == %lu\n", touch_property);
             radius = (sqrt(pow((touch_point).x - (center_point).x, 2.0) + pow((touch_point).y - (center_point).y, 2.0)));
+            radius = fmaxf(fminf(center_point.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), radius), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
 //            radius = fmaxf(fminf(radius_min, (sqrt(pow((touch_point).x - (center_point).x, 2.0) + pow((touch_point).y - (center_point).y, 2.0)))), radius_max);
             printf("radius == %f\n", radius);
             render_control();

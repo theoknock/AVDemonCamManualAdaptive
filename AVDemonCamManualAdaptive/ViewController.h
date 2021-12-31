@@ -31,25 +31,22 @@ static CGFloat radius;
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^handle_touch)(void);
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
-typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
-    ControlRendererStateProperty = 1 << 0,
-    ControlRendererStateValue= 1 << 1,
-    ControlRendererStatePropertyTransition = 1 << 2,
-    ControlRendererStateValueTransition = 1 << 3
-};
-//typedef NS_ENUM(NSUInteger, ControlRendererState) {
-//    ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
-//    ControlRendererStateProperty,           // button arc behavior and event handling
-//    ControlRendererStateValueTransition,    // tick wheel setup (after touchesEnded on button arc)
-//    ControlRendererStateValue               // tick wheel behavior and event handling
+//typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
+//    ControlRendererStateProperty = 1 << 0,
+//    ControlRendererStateValue = 1 << 1,
+//    ControlRendererStatePropertyTransition = 1 << 2,
+//    ControlRendererStateValueTransition = 1 << 3
 //};
+typedef NS_ENUM(NSUInteger, ControlRendererState) {
+    ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
+    ControlRendererStateProperty,           // button arc behavior and event handling
+    ControlRendererStateValueTransition,    // tick wheel setup (after touchesEnded on button arc)
+    ControlRendererStateValue               // tick wheel behavior and event handling
+};
 
 static ControlRendererState control_renderer_state;
 static void (^(^control_renderer)(void))(void);
 static void (^render_control)(void);
-
-static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
-static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
 
 //@interface ControlView: UIView
 //
