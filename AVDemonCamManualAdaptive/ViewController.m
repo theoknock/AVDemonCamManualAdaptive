@@ -98,6 +98,7 @@ static void (^(^(^control_renderers)(void))(void))(void) = ^ {\
 
 static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (void) {
     return ^ (UITouch * _Nonnull touch) {
+        render_control = control_renderer();
         return ^{
             touch_point = [touch preciseLocationInView:(touch).view];
             
@@ -112,12 +113,8 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
             CGFloat x_radius     = (touch_point).x - (center_point).x;
             CGFloat y_radius     = (touch_point).y - (center_point).y;
             radius = fmaxf(fminf(radius_min, (sqrt(pow(x_radius, 2.0) + pow(y_radius, 2.0)))), radius_max);
-            
-            if (touch.phase == UITouchPhaseEnded) {
-                (render_control = control_renderer())();
-            } else {
-                render_control();
-            }
+    
+            render_control();
             
             [control_view setNeedsDisplay];
             
@@ -328,7 +325,7 @@ extern void (^render_control)(void);
         
         [self setUserInteractionEnabled:FALSE];
     //  (handle_touch   =   (touch_handler          = touch_handler_init())(touches.anyObject));
-        control_renderer_state = ControlRendererStateProperty;
+//        control_renderer_state = ControlRendererStateProperty;
         control_renderer = control_renderers();
         render_control = control_renderer();
         //        {
