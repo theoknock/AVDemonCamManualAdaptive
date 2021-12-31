@@ -9,13 +9,18 @@
 @import AVFoundation;
 
 #import "ControlConfiguration.h"
+#import "ControlView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static AVCaptureDevice * _Nonnull capture_device;
-static __kindof UIView * _Nonnull control_view;
+static ControlView * _Nonnull control_view;
+// Control CGRect
 static CGPoint center_point;
-static UITouch * _Nonnull touch_ptr_ref;
+static int radius_min;
+static int radius_max;
+//
+//static UITouch * _Nonnull touch_ptr_ref;
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^handle_touch)(void);
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
@@ -37,13 +42,13 @@ static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // contro
 static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
 static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
 
-@interface ControlView: UIView
+//@interface ControlView: UIView
+//
+//@end
+//
+//NS_ASSUME_NONNULL_END
 
-@end
-
-NS_ASSUME_NONNULL_END
-
-NS_ASSUME_NONNULL_BEGIN
+//NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraView : UIView
 

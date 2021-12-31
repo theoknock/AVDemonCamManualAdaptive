@@ -28,6 +28,16 @@ static double rescale(double old_value, double old_min, double old_max, double n
     return (new_max - new_min) * /*(fmax(old_min, fmin(old_value, old_max))*/ (old_value - old_min) / (old_max - old_min) + new_min;
 };
 
+void validateRadius(int a, int b)
+{
+    // test (test a and b) and c
+    int c = a - b;
+    int k = (c >> 31) & 0x1;
+    int max = a - k * c;
+    int min = b + k * c;
+    printf("max = %d\nmin = %d",max,min);
+}
+
 static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConfigurationControlProperty) = ^ double (CaptureDeviceConfigurationControlProperty property) {
     static double button_angle;
     button_angle = (double)(180.0 + (90.0 * ((double)property / 4.0)));
@@ -42,40 +52,46 @@ static double (^CaptureDeviceConfigurationPropertyButtonAngle)(CaptureDeviceConf
 //};
 
 static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (void) {
+    radius_min = (int)round((center_point).x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+    radius_max = (int)round(CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds)); // control_view.bounds does not return correct CGRect values
     return ^ (UITouch * _Nonnull touch) {
-        touch_ptr_ref = touch;
+        //        touch_ptr_ref = touch;
+        
+        static void (^control_renderer[2])(void) = {^{ NSLog(@"%lu\t==\t\tControlRendererStateProperty", state); }, ^ { NSLog(@"%lu\t==\t\tControlRendererStateValue", state); }};
+        
         return ^{
-            if (touch.phase == UITouchPhaseBegan && state == ControlRendererStateProperty | ControlRendererStateValue)  {
+            if (touch.phase == UITouchPhaseBegan)  {
                 state++;
-                state = state % 4;
+                state = state % 2;
                 NSLog(@"state at UITouchPhaseBegan= %lu", state);
             };
             static CGPoint touch_point;
             touch_point = [touch preciseLocationInView:(touch).view];
-        
+            
             static double radian;
             radian = atan2((touch_point).y - (center_point).y,
-                                   (touch_point).x - (center_point).x);
+                           (touch_point).x - (center_point).x);
             
             static CGFloat touch_angle;
             touch_angle = radian * (180.0 / M_PI);
             if (touch_angle < 0.0) touch_angle += 360.0;
             touch_angle = fmaxf(CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), fminf(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor)));
-           
+            
             static CaptureDeviceConfigurationControlProperty touch_property;
             touch_property = (CaptureDeviceConfigurationControlProperty)round(rescale(touch_angle, CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyTorchLevel), CaptureDeviceConfigurationPropertyButtonAngle(CaptureDeviceConfigurationControlPropertyZoomFactor), CaptureDeviceConfigurationControlPropertyTorchLevel, CaptureDeviceConfigurationControlPropertyZoomFactor));
             
             CGFloat x_radius     = (touch_point).x - (center_point).x;
             CGFloat y_radius     = (touch_point).y - (center_point).y;
-            CGFloat r            = sqrt(pow(x_radius, 2.0) + pow(y_radius, 2.0));
-            static CGFloat radius;
-            radius = fmaxf(fminf((center_point).x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(control_view.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
+            static int radius;
+            radius = (int)round(sqrt(pow(x_radius, 2.0) + pow(y_radius, 2.0)));
             
-            if (touch.phase == UITouchPhaseEnded && state == ControlRendererStatePropertyTransition | ControlRendererStateValueTransition)  {
-                state++;
-                state = state % 4;
-                NSLog(@"state at UITouchPhaseEnded = %lu", state);
-            };
+            radius = fmaxf(fminf(radius_min, radius), radius_max);
+            
+//            if (touch.phase == UITouchPhaseEnded && state == ControlRendererStatePropertyTransition | ControlRendererStateValueTransition)  {
+//                state++;
+//                state = state % 4;
+//                NSLog(@"state at UITouchPhaseEnded = %lu", state);
+//            };
             
             for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
                 static CGFloat angle;
@@ -85,6 +101,7 @@ static void (^(^(^touch_handler_init)(void))(UITouch * _Nonnull))(void)  = ^ (vo
                 [CaptureDeviceConfigurationPropertyButton(property) setSelected:(property == touch_property)];
             }
             
+            control_renderer[state]();
             static ControlRendererState * _Nonnull control_renderer_state_ptr_ref; // control_renderer_state & 1
             static void const * _Nonnull (^(^control_renderer_ptr)(UITouchPhase))(dispatch_block_t _Nullable); // establishes context and state to
             static void const * _Nonnull (^render_control_ptr)(dispatch_block_t _Nullable); // dynamically dispatch control-rendering operations (button arc, tick_wheel, animations)
@@ -280,6 +297,7 @@ extern void (^(^touch_handler)(UITouch * _Nonnull))(void);
 extern CGPoint center_point;
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self == [super initWithFrame:frame]) {
+        control_view = self;
         {
             [self setTranslatesAutoresizingMaskIntoConstraints:FALSE];
             [self setBackgroundColor:[UIColor clearColor]];
@@ -392,7 +410,7 @@ extern CGPoint center_point;
 @implementation ViewController
 
 //extern AVCaptureDevice * _Nonnull const * _Nonnull capture_device;
-extern __kindof UIView * _Nonnull control_view;
+//extern __kindof UIView * _Nonnull control_view;
 
 @dynamic view;
 

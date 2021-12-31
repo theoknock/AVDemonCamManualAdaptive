@@ -18,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		B911A6552772A3D2000844DF /* ControlConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ControlConfiguration.h; sourceTree = "<group>"; };
+		B91895CD277E8780009BC2FD /* ControlView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ControlView.h; sourceTree = "<group>"; };
 		B9709C9D276DC3EB003FDA20 /* AVDemonCamManualAdaptive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVDemonCamManualAdaptive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9709CA0276DC3EB003FDA20 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		B9709CA1276DC3EB003FDA20 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -66,6 +67,7 @@
 				B9709CA1276DC3EB003FDA20 /* AppDelegate.m */,
 				B9709CA3276DC3EB003FDA20 /* SceneDelegate.h */,
 				B911A6552772A3D2000844DF /* ControlConfiguration.h */,
+				B91895CD277E8780009BC2FD /* ControlView.h */,
 				B9709CA6276DC3EB003FDA20 /* ViewController.h */,
 				B9709CA7276DC3EB003FDA20 /* ViewController.m */,
 				B9709CA4276DC3EB003FDA20 /* SceneDelegate.m */,
