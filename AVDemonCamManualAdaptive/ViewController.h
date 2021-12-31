@@ -15,28 +15,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 static AVCaptureDevice * _Nonnull capture_device;
 static ControlView * _Nonnull control_view;
-// Control CGRect
+
 static CGPoint center_point;
-static int radius_min;
-static int radius_max;
-//
+
 
 static CGPoint touch_point;
 static CGFloat touch_angle;
 static CaptureDeviceConfigurationControlProperty touch_property;
-static CaptureDeviceConfigurationControlProperty * touch_property_ptr = &touch_property;
 static CGFloat radius;
-
-//static UITouch * _Nonnull touch_ptr_ref;
+static CGFloat radius_min;
+static CGFloat radius_max;
 static void (^(^touch_handler)(UITouch * _Nonnull))(void);
 static void (^handle_touch)(void);
 static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
-//typedef NS_OPTIONS(NSUInteger, ControlRendererState) {
-//    ControlRendererStateProperty = 1 << 0,
-//    ControlRendererStateValue = 1 << 1,
-//    ControlRendererStatePropertyTransition = 1 << 2,
-//    ControlRendererStateValueTransition = 1 << 3
-//};
+
 typedef NS_ENUM(NSUInteger, ControlRendererState) {
     ControlRendererStatePropertyTransition, // button arc setup (after touchesEnded on tick wheel or initialization)
     ControlRendererStateProperty,           // button arc behavior and event handling
