@@ -24,6 +24,7 @@ static int radius_max;
 static CGPoint touch_point;
 static CGFloat touch_angle;
 static CaptureDeviceConfigurationControlProperty touch_property;
+static CaptureDeviceConfigurationControlProperty * touch_property_ptr = &touch_property;
 static CGFloat radius;
 
 //static UITouch * _Nonnull touch_ptr_ref;
