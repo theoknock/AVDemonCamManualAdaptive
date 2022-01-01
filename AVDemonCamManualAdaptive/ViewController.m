@@ -54,7 +54,9 @@ static void (^(^(^(^control_renderer_init)(void))(ControlRendererState))(void))(
     id objects[] = {
         ^{
             return ^ {
-                printf("ControlRendererStatePropertyTransition\n");
+                for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
+                    [CaptureDeviceConfigurationPropertyButton(property) setHidden:!([CaptureDeviceConfigurationPropertyButton(property) isHidden])];
+                }
             };
         },
         ^{
@@ -71,7 +73,9 @@ static void (^(^(^(^control_renderer_init)(void))(ControlRendererState))(void))(
         },
         ^{
             return ^ {
-                printf("ControlRendererStateValueTransition\n");
+                for (CaptureDeviceConfigurationControlProperty property = CaptureDeviceConfigurationControlPropertyTorchLevel; property < CaptureDeviceConfigurationControlPropertySelected; property++) {
+                    [CaptureDeviceConfigurationPropertyButton(property) setHidden:!([CaptureDeviceConfigurationPropertyButton(property) isSelected])];
+                }
             };
         },
         ^{

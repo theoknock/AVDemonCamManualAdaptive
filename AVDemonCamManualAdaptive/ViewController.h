@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, ControlRendererState) {
     ControlRendererStateProperty,           // button arc behavior and event handling
     ControlRendererStateValueTransition,    // tick wheel setup (after touchesEnded on button arc)
     ControlRendererStateValue,              // tick wheel behavior and event handling
-//    ControlRendererStateConfiguration       // non-adaptive control property configuration of the arc center point, arc size and arc origin
+    ControlRendererStateConfiguration       // non-adaptive control property configuration of the arc center point, arc size and arc origin
 };
 static ControlRendererState control_renderer_state;
 //static void (^(^control_renderer)(void))(ControlRendererState);
