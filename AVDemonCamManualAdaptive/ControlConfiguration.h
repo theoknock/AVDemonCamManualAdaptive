@@ -98,6 +98,7 @@ static UIImage * (^CaptureDeviceConfigurationControlPropertySymbolImage)(Capture
 static UIButton * (^CaptureDeviceConfigurationPropertySelectedButton)(void);
 
 static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(void))(CaptureDeviceConfigurationControlProperty) = ^ (void) {
+    // TO-DO: Bit masks for selection
     __block NSMutableArray<UIButton *> * buttons;
     buttons = [[NSMutableArray alloc] initWithCapacity:CaptureDeviceConfigurationControlPropertyImageNames[0].count];
     [CaptureDeviceConfigurationControlPropertyImageNames[0] enumerateObjectsUsingBlock:^(NSString * _Nonnull imageName, CaptureDeviceConfigurationControlProperty property_tag, BOOL * _Nonnull stop) {
@@ -111,11 +112,16 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(void))(Ca
             
             [button setUserInteractionEnabled:FALSE];
             void (^eventHandlerBlock)(void) = ^{
-//                CaptureDeviceConfigurationControlProperty next_property = (button.tag + 1) % 4;
-//                BOOL hideButton = !([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]);
-//                [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
-//                    [b setHidden:hideButton && (b.tag != button.tag)];
-//                }];
+                [buttons enumerateObjectsUsingBlock:^(UIButton * _Nonnull b, NSUInteger idx, BOOL * _Nonnull stop) {
+                    // This is a matter of an intersection between two sets in each state:
+                    //    - All shown (state 1)
+                    //    - One shown (state 2)
+                    // The state:
+                    //      - must be determined before the intersection
+                    //      - is determined by the visibility of any other buttons
+                    //
+                    [b setHidden:!([b isSelected])]; // TO-DO: Preserve the visibility of the selected button for all states
+                }];
             };
 
             objc_setAssociatedObject(button, @selector(invoke), eventHandlerBlock, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -132,5 +138,7 @@ static const UIButton * (^(^CaptureDeviceConfigurationPropertyButtons)(void))(Ca
         }]];
     };
 };
+
+static UIButton * (^CaptureDeviceConfigurationPropertyButton)(CaptureDeviceConfigurationControlProperty);
 
 #endif /* ControlConfiguration_h */
