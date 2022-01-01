@@ -38,7 +38,7 @@
         };
     };
 
-    // (((control_renderer_state) ^= (ControlRendererStateValue)), ((control_renderer_state) ^= (ControlRendererStateProperty)), ((control_renderer_state) ^= (ControlRendererStateValue)))
+    // (((button_component_renderer_state) ^= (ControlRendererStateValue)), ((button_component_renderer_state) ^= (ControlRendererStateProperty)), ((button_component_renderer_state) ^= (ControlRendererStateValue)))
 
 /////////////
 
@@ -125,8 +125,8 @@
 //    }
 //};
 //
-//extern void const * (^render_control_ptr)(dispatch_block_t _Nullable);
-//static void (^render_control)(dispatch_block_t _Nullable);
+//extern void const * (^render_button_component_ptr)(dispatch_block_t _Nullable);
+//static void (^render_button_component)(dispatch_block_t _Nullable);
 //
 //void (^(^touch_event_handler)(void))(UITouch * _Nullable) = ^ (void) {
 //    return ^ (UITouch * _Nullable touch_ptr_ref) {
@@ -150,16 +150,16 @@
 //            return fmaxf(fminf(center.x - CGRectGetMidX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds), r), CGRectGetMidX(UIScreen.mainScreen.bounds) - CGRectGetMaxX(CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertyTorchLevel).bounds));
 //        }();
 //
-//        render_control(capture_device, ^{ [control_view setNeedsDisplay]; });
+//        render_button_component(capture_device, ^{ [control_view setNeedsDisplay]; });
 //
 //        if (touch_ptr.phase == UITouchPhaseEnded) {
 ////            [CaptureDeviceConfigurationPropertyButton(CaptureDeviceConfigurationControlPropertySelected) setCenter:touch_point];
 ////            [CaptureDeviceConfigurationPropertyButton(touch_point_property()) sendActionsForControlEvents:UIControlEventTouchUpInside];
 ////            CaptureDeviceConfigurationControlProperty next_property = (touch_point_property() + 1) % 4;
 ////            if ([CaptureDeviceConfigurationPropertyButton(next_property) isHidden]) {
-////                (render_control = ControlRenderer[0](view))(capture_device, ^{ [view setNeedsDisplay]; });
+////                (render_button_component = ControlRenderer[0](view))(capture_device, ^{ [view setNeedsDisplay]; });
 ////            } else {
-////                render_control = ControlRenderer[1](view);
+////                render_button_component = ControlRenderer[1](view);
 ////            }
 //        }
 //    };
@@ -197,31 +197,4 @@
 //    NSLog(@"First result  == %d", block(c_ptr));
 //    a_int = 2;
 //    NSLog(@"Second result == %d", block(c_ptr));
-//}
-
-//- (void)drawRect:(CGRect)rect
-//{
-//    // TO-DO: Create a block initializer that return a block containing the following code, and execute it here
-//    //        Integrate it as part of an Rx-style block structure
-////    UIBezierPath * path[2] = {[UIBezierPath bezierPath], [UIBezierPath bezierPath]};
-////    int degrees[2] = {180, (int)touch_point_angle()};
-////    int end[2] = {(int)touch_point_angle(), 270};
-////    UIColor * color[2] = {[UIColor colorWithRed:255/255 green:252/255 blue:121/255 alpha:1.0], [UIColor colorWithRed:4/255 green:51/255 blue:255/255 alpha:1.0]};
-////    for (int i = 0; i < 2; i++) {
-////        for (; degrees[i] < end[i]; degrees[i]++) {
-////            [path[i] moveToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-////                                                                 radius:radius
-////                                                             startAngle:degreesToRadians(degrees[i])
-////                                                               endAngle:degreesToRadians(degrees[i])
-////                                                              clockwise:FALSE] currentPoint]];
-////            [path[i] addLineToPoint:[[UIBezierPath bezierPathWithArcCenter:center
-////                                                                    radius:radius * 0.975
-////                                                                startAngle:degreesToRadians(degrees[i])
-////                                                                  endAngle:degreesToRadians(degrees[i])
-////                                                                 clockwise:FALSE] currentPoint]];
-////            [path[i] closePath];
-////        }
-////        [color[i] setStroke];
-////        [path[i] stroke];
-////    }
 //}
